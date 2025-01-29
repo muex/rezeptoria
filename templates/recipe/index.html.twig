@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Recipe index{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <h1>Willkommen auf Rezeptoria</h1>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
+            {% for recipe in recipes %}
+                <div class="col">
+                    <div class="card">
+                        <img src="https://picsum.photos/300/200" class="card-img-top" alt="Dummy">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ recipe.title }}</h5>
+                            <p class="card-text">{{ recipe.text }}</p>
+                        </div>
+                        <div class="card-footer text-body-secondary">
+                            <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="btn btn-sm btn-secondary">show</a>
+                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-sm btn-info">edit</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                no records found
+            {% endfor %}
+            </div>
+            {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_recipe_new') }}" class="btn btn-primary">Neues Rezept erstellen</a>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

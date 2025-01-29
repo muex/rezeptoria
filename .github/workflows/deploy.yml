@@ -1,0 +1,36 @@
+name: Deploy Rezepteria App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, pdo, curl, zip
+
+      - name: Install Deployer
+        run: composer global require deployer/deployer
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOYER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.DEPLOYER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Run Deployer
+        env:
+          DEPLOYER_HOST: ${{ secrets.DEPLOYER_HOST }}
+          DEPLOYER_USER: ${{ secrets.DEPLOYER_USER }}
+        run:
+          ~/.composer/vendor/bin/dep deploy -vvv
