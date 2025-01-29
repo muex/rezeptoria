@@ -7,6 +7,7 @@ require 'recipe/symfony.php';
 set('application', 'rezeptoria');
 set('http_user', 'ssh-w0186f22');
 set('http_group', 'w0186f22');
+set('env', ['APP_ENV' => 'prod']);
 // Project repository
 set('repository', 'https://github.com/muex/rezeptoria.git');
 set('writable_mode', 'chmod');

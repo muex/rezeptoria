@@ -18,7 +18,9 @@
                         </div>
                         <div class="card-footer text-body-secondary">
                             <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="btn btn-sm btn-secondary">show</a>
-                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-sm btn-info">edit</a>
+                            {% if app.user == recipe.owner %}
+                                <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-sm btn-info">edit</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
