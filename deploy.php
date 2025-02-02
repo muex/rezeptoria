@@ -40,10 +40,8 @@ host('w0186f22.kasserver.com')
 // Tasks
 
 task('build', function () {
-    run('cd {{release_path}} && build');
     run('cd {{release_path}} && php bin/console tailwind:build --minify');
     run('cd {{release_path}} && php bin/console asset-map:compile');
-
 });
 before('deploy:cache:clear', 'build');
 task('deploy:cache:clear', function () {
