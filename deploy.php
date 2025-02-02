@@ -45,6 +45,7 @@ task('build', function () {
     run('cd {{release_path}} && php bin/console asset-map:compile');
 
 });
+before('deploy:cache:clear', 'build');
 task('deploy:cache:clear', function () {
     run('php {{release_path}}/bin/console cache:clear --env=prod --no-debug');
 });
