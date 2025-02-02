@@ -23,7 +23,7 @@
             </div>
             <div class="hidden lg:flex lg:flex-1 lg:justify-end">
                 {% if is_granted('ROLE_USER') %}
-                        {{ app.user.userIdentifier }}
+                        <span class="text-sm/6 font-semibold text-gray-900">{{ app.user.userIdentifier }} </span>
 
                         <a class="text-sm/6 font-semibold text-gray-900"
                            href="{{ path('app_logout') }}">Abmelden</a>
