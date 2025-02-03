@@ -5,3 +5,10 @@
 body {
     background-color: #f7f9f9;
 }
+
+.bg-pinegreen{
+    background-color: #157A6E;
+}
+.text-pinegreen{
+    color: #157A6E;
+}

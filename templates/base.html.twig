@@ -13,7 +13,7 @@
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body>
+    <body class="min-h-screen">
     <header class="bg-white">
         <nav class="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
             <div class="flex lg:flex-1">
@@ -35,11 +35,9 @@
             </div>
         </nav>
     </header>
-    <main class="container mx-auto mt-10">
-        <section>
-            <h2 class="text-xl font-semibold mb-4">Willkommen!</h2>
+
+
             {% block body %}{% endblock %}
-        </section>
-    </main>
+
     </body>
 </html>

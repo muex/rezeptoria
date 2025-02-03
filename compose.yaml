@@ -1,7 +1,36 @@
 version: '3.9'
 
 services:
-###> doctrine/doctrine-bundle ###
+  app:
+    image: php:8.2-fpm
+    container_name: rezeptoria
+    working_dir: /var/www/symfony
+    volumes:
+      - .:/var/www/symfony:delegated
+    networks:
+      - symfony_network
+
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y libzip-dev libpq-dev &&
+      docker-php-ext-install pdo pdo_mysql &&
+      php-fpm
+      "
+  webserver:
+    image: nginx:1.23
+    container_name: rezeptoria_webserver
+    volumes:
+      - .:/var/www/symfony:delegated
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    ports:
+      - "8080:80"
+    networks:
+      - symfony_network
+    depends_on:
+      - app
+
+  ###> doctrine/doctrine-bundle ###
   database:
     image: 'mariadb:latest'
     environment:
@@ -18,7 +47,9 @@ services:
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
-
+networks:
+  symfony_network:
+    driver: bridge
 volumes:
 ###> doctrine/doctrine-bundle ###
   database_data:
