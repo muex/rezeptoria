@@ -9,12 +9,12 @@ body {
 .bg-pinegreen{
     background-color: #157A6E;
 }
-.bg-pinegreen-40{
+.hover\:bg-pinegreen-40:hover {
     background-color: #0C4941;
 }
 .text-pinegreen{
     color: #157A6E;
 }
-.text-pinegreen-40{
+.hover\:text-pinegreen-40:hover{
     color: #0C4941;
 }
