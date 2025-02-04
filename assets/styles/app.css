@@ -9,6 +9,12 @@ body {
 .bg-pinegreen{
     background-color: #157A6E;
 }
+.bg-pinegreen-40{
+    background-color: #0C4941;
+}
 .text-pinegreen{
     color: #157A6E;
+}
+.text-pinegreen-40{
+    color: #0C4941;
 }
