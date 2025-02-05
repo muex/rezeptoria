@@ -3,7 +3,9 @@
 {% block title %}Recipe{% endblock %}
 
 {% block body %}
-    <h1>Recipe</h1>
+<div class="flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ recipe.title }}</h1>
 
     <table class="table">
         <tbody>
@@ -23,8 +25,11 @@
     </table>
 
     <a href="{{ path('app_recipe_index') }}">back to list</a>
-
+        {% if app.user == recipe.owner %}
     <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}">edit</a>
 
     {{ include('recipe/_delete_form.html.twig') }}
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
