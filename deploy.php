@@ -26,7 +26,7 @@ host(getenv('DEPLOYER_HOST'))
     ->set('deploy_path', '/www/htdocs/w0186f22/rezeptoria.de');
 // Shared files/dirs between deploys
 add('shared_files', ['.env.local']);
-add('shared_dirs', []);
+add('shared_dirs', ['public/uploads/images/']);
 
 // Writable dirs by web server
 add('writable_dirs', []);
