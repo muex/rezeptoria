@@ -35,6 +35,9 @@ class Recipe
     #[ORM\Column(type: Types::TEXT)]
     private ?string $ingredients = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $teaserImage = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -113,6 +116,18 @@ class Recipe
     public function setIngredients(string $ingredients): static
     {
         $this->ingredients = $ingredients;
+
+        return $this;
+    }
+
+    public function getTeaserImage(): ?string
+    {
+        return $this->teaserImage;
+    }
+
+    public function setTeaserImage(?string $teaserImage): static
+    {
+        $this->teaserImage = $teaserImage;
 
         return $this;
     }

@@ -17,6 +17,11 @@ class RecipeType extends AbstractType
             ->add('title')
             ->add('text')
             ->add('ingredients')
+            ->add('teaserImage', FileType::class, [
+                'label' => 'Titelbild',
+                'required' => false,
+                'mapped' => false,
+            ])
         ;
     }
 
