@@ -12,12 +12,17 @@
                 {% for recipe in recipes %}
                 <div class="rounded overflow-hidden shadow-lg flex flex-col">
                     <div class="relative"><a href="{{ path('app_recipe_show', {'id': recipe.id}) }}">
+                        {% if recipe.teaserImage %}
+                            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
+                        {% else %}
                             <img class="w-full"
                                  src="https://picsum.photos/300/200"
                                  alt="Sunset in the mountains">
-                            <div
-                                    class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
-                            </div>
+                        {% endif %}
+
+                        <div
+                                class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
+                        </div>
                         </a><a href="{{ path('app_recipe_show', {'id': recipe.id}) }}">
                             <div
                                     class="text-xs absolute top-0 right-0 bg-indigo-600 px-4 py-2 text-white mt-3 mr-3 hover:bg-white hover:text-indigo-600 transition duration-500 ease-in-out">
