@@ -6,10 +6,10 @@
 <div class="flex items-center justify-center p-4">
     <div class="max-w-5xl w-full bg-white rounded-xl shadow-lg p-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ recipe.title }}</h1>
-
-
-               <p>{{ recipe.text }}</p>
-
+        <h2>Einleitung</h2>
+        <p>{{ recipe.text }}</p>
+        <h3>Zutaten</h3>
+        <p>{{ recipe.ingredients }}</p>
 
     <a href="{{ path('app_recipe_index') }}">back to list</a>
         {% if app.user == recipe.owner %}

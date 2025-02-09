@@ -16,6 +16,7 @@ class RecipeType extends AbstractType
         $builder
             ->add('title')
             ->add('text')
+            ->add('ingredients')
         ;
     }
 
