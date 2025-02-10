@@ -16,15 +16,19 @@
         {% for comment in recipe.comments %}
             <div>
                 <p>{{ comment.content }}</p>
-                <small>Geschrieben am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
+                <small>Geschrieben von {{ comment.createdUser.username }} am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
             </div>
         {% endfor %}
 
-        <h3>Neuer Kommentar</h3>
-        {{ form_start(commentForm) }}
-        {{ form_widget(commentForm) }}
-        <button type="submit" class="btn btn-primary">Kommentar absenden</button>
-        {{ form_end(commentForm) }}
+        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+            <h3>Neuer Kommentar</h3>
+            {{ form_start(commentForm) }}
+            {{ form_widget(commentForm) }}
+            <button type="submit" class="btn btn-primary">Kommentar absenden</button>
+            {{ form_end(commentForm) }}
+        {% else %}
+            <p>Sie müssen <a href="{{ path('app_login') }}">angemeldet</a> sein, um einen Kommentar zu schreiben.</p>
+        {% endif %}
 
     <a href="{{ path('app_recipe_index') }}">back to list</a>
         {% if app.user == recipe.owner %}
