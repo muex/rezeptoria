@@ -15,7 +15,7 @@
 
         {% for comment in recipe.comments %}
             <div>
-                <p>{{ comment.content }}</p>
+                <p>{{ comment.text }}</p>
                 <small>Geschrieben von {{ comment.createdUser.username }} am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
             </div>
         {% endfor %}
