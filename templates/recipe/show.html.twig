@@ -11,6 +11,21 @@
         <h3>Zutaten</h3>
         <p>{{ recipe.ingredients }}</p>
 
+        <h2>Kommentare</h2>
+
+        {% for comment in recipe.comments %}
+            <div>
+                <p>{{ comment.content }}</p>
+                <small>Geschrieben am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
+            </div>
+        {% endfor %}
+
+        <h3>Neuer Kommentar</h3>
+        {{ form_start(commentForm) }}
+        {{ form_widget(commentForm) }}
+        <button type="submit" class="btn btn-primary">Kommentar absenden</button>
+        {{ form_end(commentForm) }}
+
     <a href="{{ path('app_recipe_index') }}">back to list</a>
         {% if app.user == recipe.owner %}
     <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}">edit</a>
