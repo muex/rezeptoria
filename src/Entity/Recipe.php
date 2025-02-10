@@ -168,4 +168,9 @@ class Recipe
 
         return $this;
     }
+
+    public function getCommentCount(): int
+    {
+        return $this->comments->count();
+    }
 }
