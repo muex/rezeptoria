@@ -23,6 +23,12 @@ class RecipeType extends AbstractType
                 'required' => false,
                 'mapped' => false,
             ])
+            ->add('categories', EntityType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => true,
+            ])
         ;
     }
 
