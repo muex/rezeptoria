@@ -24,7 +24,7 @@ class RecipeType extends AbstractType
                 'mapped' => false,
             ])
             ->add('categories', EntityType::class, [
-                'class' => Category::class,
+                'class' => CategoryType::class,
                 'choice_label' => 'name',
                 'multiple' => true,
                 'expanded' => true,
