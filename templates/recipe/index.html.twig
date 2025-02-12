@@ -23,13 +23,14 @@
                         <div
                                 class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
                         </div>
-                        </a><a href="{{ path('app_recipe_show', {'id': recipe.id}) }}">
+                        </a>
+                        <div class="absolute top-0 left-0 w-full">
                             {% for category in recipe.categories %}
-                                <div class="text-xs absolute top-0 right-0 bg-indigo-600 px-4 py-2 text-white mt-3 mr-3 hover:bg-white hover:text-indigo-600 transition duration-500 ease-in-out">
+                                <div class="text-xs bg-indigo-600 px-4 py-2 text-white mt-3 mr-3 hover:bg-white hover:text-indigo-600 transition duration-500 ease-in-out">
                                     {{ category.name }}
                                 </div>
                             {% endfor %}
-                        </a>
+                        </div>
                     </div>
                     <div class="px-6 py-4 mb-auto">
                         <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
