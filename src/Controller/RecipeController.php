@@ -70,26 +70,9 @@ final class RecipeController extends AbstractController
     #[Route('/recipe/{id}', name: 'app_recipe_show', methods: ['GET'])]
     public function show(Recipe $recipe, Request $request, EntityManagerInterface $entityManager): Response
     {
-        $comment = new Comment();
-        $commentForm = $this->createForm(CommentType::class, $comment);
-
-        $commentForm->handleRequest($request);
-
-        if ($commentForm->isSubmitted() && $commentForm->isValid()) {
-
-            $comment->setCreatedUser($this->getUser());
-            $comment->setRecipe($recipe);
-            $comment->setCreatedAt(new \DateTime());
-
-            $entityManager->persist($comment);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()]);
-        }
 
         return $this->render('recipe/show.html.twig', [
-            'recipe' => $recipe,
-            'commentForm' => $commentForm->createView(),
+            'recipe' => $recipe
         ]);
     }
 
@@ -151,7 +134,7 @@ final class RecipeController extends AbstractController
             $user = $this->getUser();
             $recipe->addComment($comment);
             $user->addComment($comment);
-            $comment->setCreatedAt(new \DateTime());
+            $comment->setCreatedAt(new \DateTimeImmutable());
             $entityManager->persist($comment);
             $entityManager->flush();
         }
