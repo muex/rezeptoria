@@ -151,7 +151,7 @@ final class RecipeController extends AbstractController
             $user = $this->getUser();
             $recipe->addComment($comment);
             $user->addComment($comment);
-
+            $comment->setCreatedAt(new \DateTime());
             $entityManager->persist($comment);
             $entityManager->flush();
         }
