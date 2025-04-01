@@ -140,20 +140,20 @@ final class RecipeController extends AbstractController
     }
 
     #[Route('/recipe/{id}/comment/new', name: 'app_recipe_comment_new', methods: ['GET', 'POST'])]
-    public function newComment(Request $request, Recipe $recipe): Response
+    public function newComment(Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
     {
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
+
             $user = $this->getUser();
             $recipe->addComment($comment);
             $user->addComment($comment);
 
-            $em->persist($comment);
-            $em->flush();
+            $entityManager->persist($comment);
+            $entityManager->flush();
         }
 
         return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()]);
