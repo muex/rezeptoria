@@ -138,4 +138,34 @@ final class RecipeController extends AbstractController
 
         return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/recipe/{id}/comment/new', name: 'app_recipe_comment_new', methods: ['GET', 'POST'])]
+    public function newComment(Request $request, Recipe $recipe): Response
+    {
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em = $this->getDoctrine()->getManager();
+            $user = $this->getUser();
+            $recipe->addComment($comment);
+            $user->addComment($comment);
+
+            $em->persist($comment);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()]);
+    }
+
+    public function commentForm(Recipe $recipe): Response
+    {
+        $form = $this->createForm(CommentType::class);
+
+        return $this->render('recipe/_comment_form.html.twig', [
+            'form' => $form->createView(),
+            'recipe' => $recipe,
+        ]);
+    }
 }
