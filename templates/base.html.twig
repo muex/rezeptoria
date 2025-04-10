@@ -23,6 +23,9 @@
             </div>
             <div class="flex flex-1 justify-end">
                 {% if is_granted('ROLE_USER') %}
+                    <a href="{{ path('app_recipe_new') }}" class="text-sm/6 font-semibold text-pinegreen pr-3">Neues Rezept erstellen</a>
+                {% endif %}
+                {% if is_granted('ROLE_USER') %}
                         <span class="text-sm/6 font-semibold text-gray-900 pr-3">{{ app.user.userIdentifier }} </span>
 
                         <a class="text-sm/6 font-semibold text-gray-900"

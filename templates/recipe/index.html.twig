@@ -64,9 +64,6 @@
                     no records found
                 {% endfor %}
             </div>
-            {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_recipe_new') }}" class="bg-pinegreen hover:bg-pinegreen-40 text-white font-bold py-2 px-4 rounded">Neues Rezept erstellen</a>
-            {% endif %}
         </section>
     </main>
 {% endblock %}
