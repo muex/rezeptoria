@@ -1,15 +1,14 @@
 {% extends 'base.html.twig' %}
 {% set dummy_bilder = [
-    '{{ asset('images/placeholder/placeholder1.png') }}',
-    '{{ asset('images/placeholder/placeholder2.png') }}',
-    '{{ asset('images/placeholder/placeholder3.png') }}'
+    'images/placeholder/placeholder1.png',
+    'images/placeholder/placeholder2.png',
+    'images/placeholder/placeholder3.png'
 ] %}
 {% block title %}Recipe index{% endblock %}
 
 {% block body %}
     <main class="container mx-auto mt-10 max-w-7xl">
         <section>
-
             <h1 class="font-bold py-5">Willkommen auf Rezeptoria</h1>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
@@ -19,8 +18,10 @@
                         {% if recipe.teaserImage %}
                             <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
                         {% else %}
-                            {% set zufalls_dummy_bild = dummy_bilder | random %}
-                            <img src="{{ zufalls_dummy_bild }}" alt="Kein Bild vorhanden" class="w-full">
+                            {% set random_index = random(range(0, dummy_bilder|length - 1)) %}
+                            {% set zufalls_dummy_pfad = dummy_bilder[random_index] %}
+
+                            <img src="{{ asset(zufalls_dummy_pfad) }}" alt="Kein Bild vorhanden" class="w-full">
                         {% endif %}
 
                         <div
