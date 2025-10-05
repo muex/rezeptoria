@@ -1,5 +1,9 @@
 {% extends 'base.html.twig' %}
-
+{% set dummy_bilder = [
+    '{{ asset('images/placeholder/placeholder1.png') }}',
+    '{{ asset('images/placeholder/placeholder2.png') }}',
+    '{{ asset('images/placeholder/placeholder3.png') }}'
+] %}
 {% block title %}Recipe index{% endblock %}
 
 {% block body %}
@@ -15,9 +19,8 @@
                         {% if recipe.teaserImage %}
                             <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
                         {% else %}
-                            <img class="w-full"
-                                 src="https://picsum.photos/300/200"
-                                 alt="Sunset in the mountains">
+                            {% set zufalls_dummy_bild = dummy_bilder | random %}
+                            <img src="{{ zufalls_dummy_bild }}" alt="Kein Bild vorhanden" class="w-full">
                         {% endif %}
 
                         <div
