@@ -19,13 +19,12 @@
                             <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
                         {% else %}
                             {% set random_index = random(range(0, dummy_bilder|length - 1)) %}
-                            {% set zufalls_dummy_pfad = dummy_bilder[random_index] %}
+                            {% set zufalls_dummy = dummy_bilder[random_index] %}
 
-                            <img src="{{ asset(zufalls_dummy_pfad) }}" alt="Kein Bild vorhanden" class="w-full">
+                            <img src="{{ asset(zufalls_dummy) }}" alt="Kein Bild vorhanden" class="w-full">
                         {% endif %}
 
-                        <div
-                                class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
+                        <div class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
                         </div>
                         </a>
                         <div class="absolute top-0 left-0 w-full">
