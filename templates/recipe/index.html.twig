@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% set dummy_bilder = [
+{% set random_images = [
     'images/placeholder/placeholder1.png',
     'images/placeholder/placeholder2.png',
     'images/placeholder/placeholder3.png'
@@ -18,10 +18,10 @@
                         {% if recipe.teaserImage %}
                             <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
                         {% else %}
-                            {% set random_index = random(range(0, dummy_bilder|length - 1)) %}
-                            {% set zufalls_dummy = dummy_bilder[random_index] %}
+                            {% set random_index = random(range(0, random_images|length - 1)) %}
+                            {% set random_image = random_images[random_index] %}
 
-                            <img src="{{ asset(zufalls_dummy) }}" alt="Kein Bild vorhanden" class="w-full">
+                            <img src="{{ asset(random_image) }}" alt="Kein Bild vorhanden" class="w-full">
                         {% endif %}
 
                         <div class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
