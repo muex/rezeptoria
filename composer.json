@@ -7,10 +7,10 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "doctrine/dbal": "^3.10.3",
+        "doctrine/dbal": "^3.10.4",
         "doctrine/doctrine-bundle": "^2.18.1",
         "doctrine/doctrine-migrations-bundle": "^3.7.0",
-        "doctrine/orm": "^3.5.7",
+        "doctrine/orm": "^3.5.8",
         "symfony/apache-pack": "^1.0.1",
         "symfony/asset": "7.4.*",
         "symfony/console": "7.4.*",
@@ -25,15 +25,15 @@
         "symfony/twig-bundle": "7.4.*",
         "symfony/ux-turbo": "^2.31",
         "symfony/validator": "7.4.*",
-        "symfony/webpack-encore-bundle": "^2.3",
+        "symfony/webpack-encore-bundle": "^2.4",
         "symfony/yaml": "7.4.*",
         "symfonycasts/tailwind-bundle": "^0.7.1",
         "twig/extra-bundle": "^2.12|^3.22.1",
-        "twig/twig": "^2.12|^3.22.0"
+        "twig/twig": "^2.12|^3.22.1"
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.1.32",
-        "symfony/maker-bundle": "^1.65.0",
+        "phpstan/phpstan": "^2.1.33",
+        "symfony/maker-bundle": "^1.65.1",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     },
