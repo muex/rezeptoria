@@ -21,19 +21,19 @@
         "symfony/mime": "7.4.*",
         "symfony/runtime": "7.4.*",
         "symfony/security-bundle": "7.4.*",
-        "symfony/stimulus-bundle": "^2.32",
+        "symfony/stimulus-bundle": "^2.33",
         "symfony/twig-bundle": "7.4.*",
-        "symfony/ux-turbo": "^2.32",
+        "symfony/ux-turbo": "^2.33",
         "symfony/validator": "7.4.*",
         "symfony/webpack-encore-bundle": "^2.4",
         "symfony/yaml": "7.4.*",
         "symfonycasts/tailwind-bundle": "^0.7.1",
-        "twig/extra-bundle": "^2.12|^3.23.0",
-        "twig/twig": "^2.12|^3.23.0"
+        "twig/extra-bundle": "^2.12|^3.24.0",
+        "twig/twig": "^2.12|^3.24.0"
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.1.40",
-        "symfony/maker-bundle": "^1.66.0",
+        "phpstan/phpstan": "^2.1.42",
+        "symfony/maker-bundle": "^1.67.0",
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*"
     },
