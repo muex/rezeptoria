@@ -41,7 +41,7 @@ class Recipe
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'recipe')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'recipe', cascade: ['remove'], orphanRemoval: true)]
     private Collection $comments;
 
     public function __construct()
