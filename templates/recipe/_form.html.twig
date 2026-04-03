@@ -11,9 +11,7 @@
     </div>
 
     {# ── Sections collection ──────────────────────────────────────── #}
-    <div id="sections-wrapper"
-         data-prototype="{{ form_widget(form.sections.vars.prototype)|e('html_attr') }}"
-         data-index="{{ form.sections|length }}">
+    <div id="sections-wrapper" data-index="{{ form.sections|length }}">
 
         <h3 class="font-semibold text-gray-800 mb-3">Abschnitte</h3>
 
@@ -70,6 +68,52 @@
 </button>
 {{ form_end(form) }}
 
+{#
+    Template for new sections added via JS.
+    Using a <template> element (not data-prototype) so we can define our own
+    HTML structure with the correct CSS classes.
+    Placeholder __section__ is replaced with the section index in JS.
+    The ingredient data-prototype uses __section__ + __ingredient__ placeholders.
+#}
+<template id="section-template">
+    <div class="section-item border border-gray-200 rounded-lg p-4 bg-gray-50">
+
+        <div class="flex justify-between items-center mb-3">
+            <span class="font-medium text-gray-700">Abschnitt</span>
+            <button type="button" class="remove-section-btn text-red-500 text-sm hover:text-red-700">× Entfernen</button>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+                   for="recipe_sections___section___title">Titel des Abschnitts</label>
+            <input type="text"
+                   id="recipe_sections___section___title"
+                   name="recipe[sections][__section__][title]"
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+
+        <div class="ingredients-wrapper mt-4"
+             data-prototype="{{ form_widget(form.sections.vars.prototype.ingredients.vars.prototype)|e('html_attr') }}"
+             data-index="0">
+            <p class="text-sm font-medium text-gray-700 mb-2">Zutaten</p>
+            <div class="ingredients-list space-y-2"></div>
+            <button type="button" class="add-ingredient-btn mt-2 text-sm text-pinegreen hover:underline">
+                + Zutat hinzufügen
+            </button>
+        </div>
+
+        <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+                   for="recipe_sections___section___preparation">Zubereitung</label>
+            <textarea id="recipe_sections___section___preparation"
+                      name="recipe[sections][__section__][preparation]"
+                      rows="5"
+                      placeholder="Zubereitungsschritte …"
+                      class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+        </div>
+    </div>
+</template>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var sectionsWrapper = document.getElementById('sections-wrapper');
@@ -79,17 +123,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var ingredientsWrapper = sectionEl.querySelector('.ingredients-wrapper');
         if (!ingredientsWrapper) return;
 
-        var addBtn = sectionEl.querySelector('.add-ingredient-btn');
-        if (addBtn) {
-            addBtn.addEventListener('click', function () {
-                addIngredient(ingredientsWrapper);
-            });
-        }
+        sectionEl.querySelector('.add-ingredient-btn')
+            .addEventListener('click', function () { addIngredient(ingredientsWrapper); });
 
         sectionEl.querySelectorAll('.remove-ingredient-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                btn.closest('.ingredient-item').remove();
-            });
+            btn.addEventListener('click', function () { btn.closest('.ingredient-item').remove(); });
         });
     }
 
@@ -103,6 +141,14 @@ document.addEventListener('DOMContentLoaded', function () {
         div.className = 'ingredient-item flex items-center gap-2';
         div.innerHTML = html;
 
+        // Symfony renders compound types with a wrapper <div>; unwrap it so
+        // the inputs sit directly in our flex row.
+        var first = div.firstElementChild;
+        if (first && first.tagName === 'DIV') {
+            while (first.firstChild) { div.insertBefore(first.firstChild, first); }
+            div.removeChild(first);
+        }
+
         var removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'remove-ingredient-btn text-red-400 hover:text-red-600 px-1';
@@ -114,42 +160,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addSection() {
-        var prototype = sectionsWrapper.dataset.prototype;
-        var index     = parseInt(sectionsWrapper.dataset.index || '0');
-        var html      = prototype.replace(/__section__/g, index);
+        var tmpl  = document.getElementById('section-template');
+        var index = parseInt(sectionsWrapper.dataset.index || '0');
         sectionsWrapper.dataset.index = index + 1;
 
-        var div = document.createElement('div');
-        div.className = 'section-item border border-gray-200 rounded-lg p-4 bg-gray-50';
-        div.innerHTML = html;
+        // Clone the <template> content
+        var clone     = document.importNode(tmpl.content, true);
+        var sectionEl = clone.querySelector('.section-item');
 
-        // prepend header with remove button
-        var header = document.createElement('div');
-        header.className = 'flex justify-between items-center mb-3';
-        var label = document.createElement('span');
-        label.className = 'font-medium text-gray-700';
-        label.textContent = 'Abschnitt';
-        var removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.className = 'remove-section-btn text-red-500 text-sm hover:text-red-700';
-        removeBtn.textContent = '× Entfernen';
-        removeBtn.addEventListener('click', function () { div.remove(); });
-        header.appendChild(label);
-        header.appendChild(removeBtn);
-        div.prepend(header);
+        // Replace __section__ in field names, ids and label-for attributes
+        sectionEl.querySelectorAll('[name]').forEach(function (el) {
+            el.name = el.name.replace(/__section__/g, index);
+        });
+        sectionEl.querySelectorAll('[id]').forEach(function (el) {
+            el.id = el.id.replace(/__section__/g, index);
+        });
+        sectionEl.querySelectorAll('[for]').forEach(function (el) {
+            el.htmlFor = el.htmlFor.replace(/__section__/g, index);
+        });
 
-        setupIngredientButtons(div);
-        sectionsList.appendChild(div);
+        // Also replace __section__ inside the ingredient data-prototype attribute
+        // so field names like recipe[sections][__section__][ingredients][...] become
+        // recipe[sections][0][ingredients][...]
+        var ingredientsWrapper = sectionEl.querySelector('.ingredients-wrapper');
+        if (ingredientsWrapper && ingredientsWrapper.dataset.prototype) {
+            ingredientsWrapper.dataset.prototype =
+                ingredientsWrapper.dataset.prototype.replace(/__section__/g, index);
+        }
+
+        // Wire up the remove button
+        sectionEl.querySelector('.remove-section-btn')
+            .addEventListener('click', function () { sectionEl.remove(); });
+
+        setupIngredientButtons(sectionEl);
+        sectionsList.appendChild(sectionEl);
     }
 
     document.getElementById('add-section-btn').addEventListener('click', addSection);
 
-    // wire up existing sections
+    // Wire up sections that were rendered server-side (edit mode)
     document.querySelectorAll('.section-item').forEach(function (sectionEl) {
-        var removeBtn = sectionEl.querySelector('.remove-section-btn');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function () { sectionEl.remove(); });
-        }
+        sectionEl.querySelector('.remove-section-btn')
+            .addEventListener('click', function () { sectionEl.remove(); });
         setupIngredientButtons(sectionEl);
     });
 });
