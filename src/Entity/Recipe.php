@@ -19,7 +19,7 @@ class Recipe
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $text = null;
 
     #[ORM\ManyToOne(inversedBy: 'recipes')]
@@ -32,7 +32,7 @@ class Recipe
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'recipes')]
     private Collection $categories;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $ingredients = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -44,10 +44,20 @@ class Recipe
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'recipe', cascade: ['remove'], orphanRemoval: true)]
     private Collection $comments;
 
+    #[ORM\Column(options: ['default' => 4])]
+    private int $baseServings = 4;
+
+    /**
+     * @var Collection<int, RecipeSection>
+     */
+    #[ORM\OneToMany(targetEntity: RecipeSection::class, mappedBy: 'recipe', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $sections;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->sections = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -72,7 +82,7 @@ class Recipe
         return $this->text;
     }
 
-    public function setText(string $text): static
+    public function setText(?string $text): static
     {
         $this->text = $text;
 
@@ -120,7 +130,7 @@ class Recipe
         return $this->ingredients;
     }
 
-    public function setIngredients(string $ingredients): static
+    public function setIngredients(?string $ingredients): static
     {
         $this->ingredients = $ingredients;
 
@@ -160,7 +170,6 @@ class Recipe
     public function removeComment(Comment $comment): static
     {
         if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
             if ($comment->getRecipe() === $this) {
                 $comment->setRecipe(null);
             }
@@ -172,5 +181,46 @@ class Recipe
     public function getCommentCount(): int
     {
         return $this->comments->count();
+    }
+
+    public function getBaseServings(): int
+    {
+        return $this->baseServings;
+    }
+
+    public function setBaseServings(int $baseServings): static
+    {
+        $this->baseServings = $baseServings;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RecipeSection>
+     */
+    public function getSections(): Collection
+    {
+        return $this->sections;
+    }
+
+    public function addSection(RecipeSection $section): static
+    {
+        if (!$this->sections->contains($section)) {
+            $this->sections->add($section);
+            $section->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSection(RecipeSection $section): static
+    {
+        if ($this->sections->removeElement($section)) {
+            if ($section->getRecipe() === $this) {
+                $section->setRecipe(null);
+            }
+        }
+
+        return $this;
     }
 }

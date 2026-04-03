@@ -1,41 +1,135 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Recipe{% endblock %}
+{% block title %}{{ recipe.title }}{% endblock %}
 
 {% block body %}
 <div class="flex items-center justify-center p-4">
     <div class="max-w-5xl w-full bg-white rounded-xl shadow-lg p-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ recipe.title }}</h1>
-        {% if recipe.teaserImage %}
-            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
-        {% endif %}
-        <h2>Einleitung</h2>
-        <p>{{ recipe.text }}</p>
-        <h3>Zutaten</h3>
-        <p>{{ recipe.ingredients }}</p>
 
-        <h2>Kommentare</h2>
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ recipe.title }}</h1>
+
+        {% if recipe.teaserImage %}
+            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }} Image" class="w-full rounded-lg mb-6">
+        {% endif %}
+
+        {% if recipe.text %}
+            <p class="text-gray-700 mb-6">{{ recipe.text }}</p>
+        {% endif %}
+
+        {# ── Sections (new structured data) ───────────────────── #}
+        {% if recipe.sections|length > 0 %}
+
+            {# Portion calculator #}
+            <div class="flex items-center gap-3 mb-8 p-3 bg-gray-50 rounded-lg border border-gray-200 w-fit">
+                <span class="text-sm font-medium text-gray-700">Portionen:</span>
+                <button type="button" id="btn-decrease"
+                        class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold">−</button>
+                <span id="current-servings" class="w-8 text-center font-semibold text-gray-900"
+                      data-base="{{ recipe.baseServings }}">{{ recipe.baseServings }}</span>
+                <button type="button" id="btn-increase"
+                        class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold">+</button>
+            </div>
+
+            {% for section in recipe.sections %}
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+                        {{ section.title }}
+                    </h2>
+
+                    {% if section.ingredients|length > 0 %}
+                        <h3 class="font-medium text-gray-700 mb-2">Zutaten</h3>
+                        <ul class="space-y-1 mb-4">
+                            {% for ingredient in section.ingredients %}
+                                <li class="flex items-baseline gap-2 text-gray-700">
+                                    {% if ingredient.amount %}
+                                        <span class="ingredient-amount font-medium w-12 text-right tabular-nums"
+                                              data-base-amount="{{ ingredient.amount }}">
+                                            {{ ingredient.amount|number_format(ingredient.amount == ingredient.amount|round ? 0 : 2, ',', '.') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="w-12"></span>
+                                    {% endif %}
+                                    {% if ingredient.unit %}
+                                        <span class="text-gray-500 w-14">{{ ingredient.unit }}</span>
+                                    {% else %}
+                                        <span class="w-14"></span>
+                                    {% endif %}
+                                    <span>{{ ingredient.name }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    {% if section.preparation %}
+                        <h3 class="font-medium text-gray-700 mb-2">Zubereitung</h3>
+                        <p class="text-gray-700 whitespace-pre-line">{{ section.preparation }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+        {% else %}
+            {# ── Fallback for old plain-text recipes ─────────── #}
+            {% if recipe.ingredients %}
+                <h3 class="font-semibold text-gray-800 mb-2">Zutaten</h3>
+                <p class="text-gray-700 whitespace-pre-line mb-6">{{ recipe.ingredients }}</p>
+            {% endif %}
+        {% endif %}
+
+        <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Kommentare</h2>
 
         {% for comment in recipe.comments %}
-            <div>
-                <p>{{ comment.text }}</p>
-                <small>Geschrieben von {{ comment.createdUser.username }} am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
+            <div class="border-b border-gray-100 py-3">
+                <p class="text-gray-700">{{ comment.text }}</p>
+                <small class="text-gray-400">Geschrieben von {{ comment.createdUser.username }} am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
             </div>
         {% endfor %}
 
         {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-            <h3>Neuer Kommentar</h3>
+            <h3 class="font-semibold text-gray-800 mt-6 mb-3">Neuer Kommentar</h3>
             {{ render(controller('App\\Controller\\RecipeController::commentForm', {'recipe': recipe.id})) }}
         {% else %}
-            <p>Sie müssen <a href="{{ path('app_login') }}">angemeldet</a> sein, um einen Kommentar zu schreiben.</p>
+            <p class="text-gray-600 mt-4">Sie müssen <a href="{{ path('app_login') }}" class="text-pinegreen underline">angemeldet</a> sein, um einen Kommentar zu schreiben.</p>
         {% endif %}
 
-    <a href="{{ path('app_recipe_index') }}">back to list</a>
-        {% if app.user == recipe.owner %}
-    <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}">edit</a>
-
-    {{ include('recipe/_delete_form.html.twig') }}
-        {% endif %}
+        <div class="mt-6 flex gap-4">
+            <a href="{{ path('app_recipe_index') }}" class="text-sm text-gray-500 hover:underline">← Zurück zur Liste</a>
+            {% if app.user == recipe.owner %}
+                <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="text-sm text-pinegreen hover:underline">Bearbeiten</a>
+                {{ include('recipe/_delete_form.html.twig') }}
+            {% endif %}
+        </div>
     </div>
 </div>
+
+{% if recipe.sections|length > 0 %}
+<script>
+(function () {
+    var baseServings    = {{ recipe.baseServings|json_encode }};
+    var currentServings = baseServings;
+    var servingsEl      = document.getElementById('current-servings');
+    var amountEls       = document.querySelectorAll('.ingredient-amount');
+
+    function formatAmount(value) {
+        if (value === 0) return '—';
+        var rounded = Math.round(value * 100) / 100;
+        return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(2).replace('.', ',');
+    }
+
+    function updateAmounts() {
+        servingsEl.textContent = currentServings;
+        amountEls.forEach(function (el) {
+            var base = parseFloat(el.dataset.baseAmount);
+            el.textContent = formatAmount(base * currentServings / baseServings);
+        });
+    }
+
+    document.getElementById('btn-decrease').addEventListener('click', function () {
+        if (currentServings > 1) { currentServings--; updateAmounts(); }
+    });
+    document.getElementById('btn-increase').addEventListener('click', function () {
+        currentServings++; updateAmounts();
+    });
+}());
+</script>
+{% endif %}
 {% endblock %}
