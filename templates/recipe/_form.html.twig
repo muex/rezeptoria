@@ -1,4 +1,225 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-<button class="w-full bg-pinegreen hover:bg-pinegreen-40 text-white font-medium py-2.5 rounded-lg transition-colors">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+<div class="space-y-6">
+
+    {{ form_row(form.title) }}
+    {{ form_row(form.text) }}
+
+    <div class="flex items-center gap-3">
+        <label class="font-medium text-gray-700 text-sm">Grundmenge für</label>
+        {{ form_widget(form.baseServings, {attr: {class: 'w-20 border border-gray-300 rounded px-2 py-1 text-sm', min: 1}}) }}
+        <span class="text-sm text-gray-600">Portionen</span>
+    </div>
+
+    {# ── Sections (manually rendered so we control the HTML structure) ── #}
+    <div id="sections-wrapper" data-index="{{ form.sections|length }}">
+
+        <h3 class="font-semibold text-gray-800 mb-3">Abschnitte</h3>
+
+        <div id="sections-list" class="space-y-4">
+            {% for section in form.sections %}
+                <div class="section-item border border-gray-200 rounded-lg p-4 bg-gray-50"
+                     data-section-index="{{ loop.index0 }}">
+
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-medium text-gray-700">Abschnitt</span>
+                        <button type="button" class="remove-section-btn text-red-500 text-sm hover:text-red-700">× Entfernen</button>
+                    </div>
+
+                    {{ form_row(section.title, {label: 'Titel des Abschnitts'}) }}
+
+                    <div class="ingredients-wrapper mt-4"
+                         data-index="{{ section.ingredients|length }}">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Zutaten</p>
+                        <div class="ingredients-list space-y-2">
+                            {% for ingredient in section.ingredients %}
+                                <div class="ingredient-item flex items-center gap-2">
+                                    {{ form_widget(ingredient.amount) }}
+                                    {{ form_widget(ingredient.unit) }}
+                                    {{ form_widget(ingredient.name) }}
+                                    <button type="button" class="remove-ingredient-btn text-red-400 hover:text-red-600 px-1">×</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="add-ingredient-btn mt-2 text-sm text-pinegreen hover:underline">
+                            + Zutat hinzufügen
+                        </button>
+                    </div>
+
+                    {{ form_row(section.preparation, {label: 'Zubereitung'}) }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-section-btn"
+                class="mt-4 border border-pinegreen text-pinegreen px-4 py-2 rounded-lg text-sm hover:bg-pinegreen hover:text-white transition-colors">
+            + Abschnitt hinzufügen
+        </button>
+    </div>
+
+    {{ form_row(form.teaserImage) }}
+    {{ form_row(form.categories) }}
+</div>
+
+<button class="w-full bg-pinegreen hover:bg-pinegreen-40 text-white font-medium py-2.5 rounded-lg transition-colors mt-6">
+    {{ button_label|default('Speichern') }}
+</button>
+
+{#
+  Render the CSRF token manually. We use render_rest:false on form_end below
+  to prevent Symfony from auto-rendering form.sections (which we handle
+  ourselves above), which would cause "already rendered" exceptions for the
+  fields we already output in the loop.
+#}
+{% if form._token is defined %}{{ form_widget(form._token) }}{% endif %}
+
+{{ form_end(form, {'render_rest': false}) }}
+
+{# ──────────────────────────────────────────────────────────────────────────
+   JS <template> elements – outside the <form> so Symfony's form rendering
+   system never touches them.
+
+   Field names follow the stable Symfony convention:
+     recipe[sections][SECTION_IDX][...]
+     recipe[sections][SECTION_IDX][ingredients][INGREDIENT_IDX][...]
+
+   Placeholders replaced by JS:
+     __section__    → section index
+     __ingredient__ → ingredient index within that section
+   ────────────────────────────────────────────────────────────────────────── #}
+
+<template id="section-template">
+    <div class="section-item border border-gray-200 rounded-lg p-4 bg-gray-50">
+        <div class="flex justify-between items-center mb-3">
+            <span class="font-medium text-gray-700">Abschnitt</span>
+            <button type="button" class="remove-section-btn text-red-500 text-sm hover:text-red-700">× Entfernen</button>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+                   for="recipe_sections___section___title">Titel des Abschnitts</label>
+            <input type="text"
+                   id="recipe_sections___section___title"
+                   name="recipe[sections][__section__][title]"
+                   class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+        <div class="ingredients-wrapper mt-4" data-index="0">
+            <p class="text-sm font-medium text-gray-700 mb-2">Zutaten</p>
+            <div class="ingredients-list space-y-2"></div>
+            <button type="button" class="add-ingredient-btn mt-2 text-sm text-pinegreen hover:underline">
+                + Zutat hinzufügen
+            </button>
+        </div>
+        <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+                   for="recipe_sections___section___preparation">Zubereitung</label>
+            <textarea id="recipe_sections___section___preparation"
+                      name="recipe[sections][__section__][preparation]"
+                      rows="5"
+                      placeholder="Zubereitungsschritte …"
+                      class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+        </div>
+    </div>
+</template>
+
+<template id="ingredient-template">
+    <div class="ingredient-item flex items-center gap-2">
+        <input type="number"
+               id="recipe_sections___section___ingredients___ingredient___amount"
+               name="recipe[sections][__section__][ingredients][__ingredient__][amount]"
+               step="any"
+               placeholder="Menge"
+               class="w-24 border border-gray-300 rounded px-2 py-1 text-sm">
+        <input type="text"
+               id="recipe_sections___section___ingredients___ingredient___unit"
+               name="recipe[sections][__section__][ingredients][__ingredient__][unit]"
+               placeholder="Einheit"
+               class="w-24 border border-gray-300 rounded px-2 py-1 text-sm">
+        <input type="text"
+               id="recipe_sections___section___ingredients___ingredient___name"
+               name="recipe[sections][__section__][ingredients][__ingredient__][name]"
+               placeholder="Zutat"
+               class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm">
+        <button type="button" class="remove-ingredient-btn text-red-400 hover:text-red-600 px-1">×</button>
+    </div>
+</template>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var sectionsWrapper = document.getElementById('sections-wrapper');
+    var sectionsList    = document.getElementById('sections-list');
+
+    function setupIngredientButtons(sectionEl) {
+        var ingredientsWrapper = sectionEl.querySelector('.ingredients-wrapper');
+        if (!ingredientsWrapper) return;
+
+        sectionEl.querySelector('.add-ingredient-btn')
+            .addEventListener('click', function () { addIngredient(sectionEl, ingredientsWrapper); });
+
+        sectionEl.querySelectorAll('.remove-ingredient-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () { btn.closest('.ingredient-item').remove(); });
+        });
+    }
+
+    function addIngredient(sectionEl, ingredientsWrapper) {
+        var sectionIndex = sectionEl.dataset.sectionIndex;
+        var ingIndex     = parseInt(ingredientsWrapper.dataset.index || '0');
+        ingredientsWrapper.dataset.index = ingIndex + 1;
+
+        var tmpl   = document.getElementById('ingredient-template');
+        var clone  = document.importNode(tmpl.content, true);
+        var itemEl = clone.querySelector('.ingredient-item');
+
+        itemEl.querySelectorAll('[name]').forEach(function (el) {
+            el.name = el.name
+                .replace(/__section__/g, sectionIndex)
+                .replace(/__ingredient__/g, ingIndex);
+        });
+        itemEl.querySelectorAll('[id]').forEach(function (el) {
+            el.id = el.id
+                .replace(/__section__/g, sectionIndex)
+                .replace(/__ingredient__/g, ingIndex);
+        });
+
+        itemEl.querySelector('.remove-ingredient-btn')
+            .addEventListener('click', function () { itemEl.remove(); });
+
+        ingredientsWrapper.querySelector('.ingredients-list').appendChild(itemEl);
+    }
+
+    function addSection() {
+        var sectionIndex = parseInt(sectionsWrapper.dataset.index || '0');
+        sectionsWrapper.dataset.index = sectionIndex + 1;
+
+        var tmpl      = document.getElementById('section-template');
+        var clone     = document.importNode(tmpl.content, true);
+        var sectionEl = clone.querySelector('.section-item');
+
+        // Store section index for ingredient creation later
+        sectionEl.dataset.sectionIndex = sectionIndex;
+
+        sectionEl.querySelectorAll('[name]').forEach(function (el) {
+            el.name = el.name.replace(/__section__/g, sectionIndex);
+        });
+        sectionEl.querySelectorAll('[id]').forEach(function (el) {
+            el.id = el.id.replace(/__section__/g, sectionIndex);
+        });
+        sectionEl.querySelectorAll('[for]').forEach(function (el) {
+            el.htmlFor = el.htmlFor.replace(/__section__/g, sectionIndex);
+        });
+
+        sectionEl.querySelector('.remove-section-btn')
+            .addEventListener('click', function () { sectionEl.remove(); });
+
+        setupIngredientButtons(sectionEl);
+        sectionsList.appendChild(sectionEl);
+    }
+
+    document.getElementById('add-section-btn').addEventListener('click', addSection);
+
+    // Wire up sections rendered server-side (edit mode)
+    document.querySelectorAll('.section-item').forEach(function (sectionEl) {
+        sectionEl.querySelector('.remove-section-btn')
+            .addEventListener('click', function () { sectionEl.remove(); });
+        setupIngredientButtons(sectionEl);
+    });
+});
+</script>
