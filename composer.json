@@ -29,7 +29,7 @@
         "symfony/yaml": "7.4.*",
         "symfonycasts/tailwind-bundle": "^0.7.1",
         "twig/extra-bundle": "^2.12|^3.24.0",
-        "twig/twig": "^2.12|^3.27.0"
+        "twig/twig": "^2.12|^3.27.1"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.2.1",
