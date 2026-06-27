@@ -1,0 +1,38 @@
+{#
+  Reusable advertisement slot — Apple-style, unobtrusive placeholder.
+
+  Drop your real ad network code (e.g. Google AdSense <ins class="adsbygoogle">)
+  inside the marked area to activate a slot.
+
+  Params:
+    format : 'leaderboard' | 'rectangle' | 'skyscraper' | 'infeed'  (default 'rectangle')
+    label  : override the small disclosure label  (default 'Anzeige')
+#}
+{% set format = format|default('rectangle') %}
+{% set label  = label|default('Anzeige') %}
+
+{% set sizes = {
+    'leaderboard': 'w-full min-h-[90px] md:min-h-[120px]',
+    'rectangle':   'w-full max-w-[336px] min-h-[280px] mx-auto',
+    'skyscraper':  'w-full min-h-[600px]',
+    'infeed':      'w-full min-h-[320px] h-full'
+} %}
+
+<aside class="ad-slot group {{ sizes[format] ?? sizes['rectangle'] }} relative flex flex-col items-center justify-center
+              rounded-3xl border border-black/5 bg-white/60 backdrop-blur-xl
+              text-center overflow-hidden"
+       aria-label="{{ label }}">
+    <span class="absolute top-3 left-4 text-[10px] font-medium uppercase tracking-[0.12em] text-gray-400">
+        {{ label }}
+    </span>
+
+    {# ── Ad network code goes here ─────────────────────────────── #}
+    <div class="ad-slot__placeholder flex flex-col items-center justify-center gap-1 px-6 py-8 text-gray-300">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3.75 5.25h16.5v13.5H3.75zM3.75 9h16.5M8.25 9v9.75" />
+        </svg>
+        <span class="text-xs font-medium tracking-wide text-gray-400">Werbefläche</span>
+    </div>
+    {# ──────────────────────────────────────────────────────────── #}
+</aside>

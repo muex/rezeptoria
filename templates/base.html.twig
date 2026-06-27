@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="de" class="scroll-smooth antialiased">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <title>{% block title %}Rezeptoria{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.1em%22 font-size=%22104%22>🍳</text></svg>">
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
             <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
@@ -15,31 +15,56 @@
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body class="min-h-screen">
-    <header class="bg-white">
-        <nav class="mx-auto flex max-w-7xl items-center justify-between py-6" aria-label="Global">
+    <body class="min-h-screen flex flex-col bg-[#f5f5f7] text-[#1d1d1f] selection:bg-pinegreen/20">
+
+    {# ── Frosted-glass navigation (Apple style) ─────────────────── #}
+    <header class="sticky top-0 z-50 border-b border-black/5 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
+        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5" aria-label="Global">
             <div class="flex lg:flex-1">
-                <a href="{{ path('app_recipe_index')}}" class="-m-1.5 p-1.5">
-                    <span>Rezeptoria</span>
+                <a href="{{ path('app_recipe_index') }}" class="flex items-center gap-2 -m-1.5 p-1.5 group">
+                    <span class="text-xl">🍳</span>
+                    <span class="text-lg font-semibold tracking-tight text-[#1d1d1f] group-hover:text-pinegreen transition-colors">Rezeptoria</span>
                 </a>
             </div>
-            <div class="flex flex-1 justify-end">
+            <div class="flex flex-1 items-center justify-end gap-5 text-[13px]">
                 {% if is_granted('ROLE_USER') %}
-                    <a href="{{ path('app_recipe_new') }}" class="text-sm/6 font-semibold text-pinegreen pr-3">Neues Rezept erstellen</a>
-                {% endif %}
-                {% if is_granted('ROLE_USER') %}
-                        <span class="text-sm/6 font-semibold text-gray-900 pr-3">{{ app.user.userIdentifier }} </span>
-
-                        <a class="text-sm/6 font-semibold text-gray-900"
-                           href="{{ path('app_logout') }}">Abmelden</a>
-
+                    <a href="{{ path('app_recipe_new') }}"
+                       class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-pinegreen px-4 py-2 font-medium text-white shadow-sm hover:bg-pinegreen-40 transition-colors">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Neues Rezept
+                    </a>
+                    <span class="hidden md:inline font-medium text-gray-500">{{ app.user.userIdentifier }}</span>
+                    <a class="font-medium text-gray-600 hover:text-[#1d1d1f] transition-colors" href="{{ path('app_logout') }}">Abmelden</a>
                 {% else %}
-                        <a class="text-sm/6 font-semibold text-gray-900"
-                           href="{{ path('app_login') }}">Anmelden  <span aria-hidden="true">&rarr;</span></a>
+                    <a class="font-medium text-gray-600 hover:text-[#1d1d1f] transition-colors" href="{{ path('app_login') }}">
+                        Anmelden <span aria-hidden="true">&rarr;</span>
+                    </a>
                 {% endif %}
             </div>
         </nav>
     </header>
-    {% block body %}{% endblock %}
+
+    <div class="flex-1">
+        {% block body %}{% endblock %}
+    </div>
+
+    {# ── Footer ─────────────────────────────────────────────────── #}
+    <footer class="mt-20 border-t border-black/5 bg-white/50">
+        <div class="mx-auto max-w-7xl px-6 py-10">
+            {% block footer_ad %}
+                <div class="mb-10">
+                    {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+                </div>
+            {% endblock %}
+            <div class="flex flex-col items-center justify-between gap-4 text-xs text-gray-400 sm:flex-row">
+                <span class="flex items-center gap-2">
+                    <span>🍳</span> Rezeptoria — leckere Rezepte, schön serviert.
+                </span>
+                <span>© {{ "now"|date("Y") }} Rezeptoria. Alle Rechte vorbehalten.</span>
+            </div>
+        </div>
+    </footer>
     </body>
 </html>

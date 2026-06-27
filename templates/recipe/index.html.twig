@@ -4,69 +4,112 @@
     'images/placeholder/placeholder2.png',
     'images/placeholder/placeholder3.png'
 ] %}
-{% block title %}Recipe index{% endblock %}
+{% block title %}Rezeptoria — leckere Rezepte, schön serviert{% endblock %}
 
 {% block body %}
-    <main class="container mx-auto mt-10 max-w-7xl">
-        <section>
-            <h1 class="font-bold py-5">Willkommen auf Rezeptoria</h1>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
-                {% for recipe in recipes %}
-                <div class="rounded overflow-hidden shadow-lg flex flex-col">
-                    <div class="relative"><a href="{{ path('app_recipe_show', {'id': recipe.id}) }}">
-                        {% if recipe.teaserImage %}
-                            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title}} Image" class="w-full">
-                        {% else %}
-                            {% set random_index = random(range(0, random_images|length - 1)) %}
-                            {% set random_image = random_images[random_index] %}
-
-                            <img src="{{ asset(random_image) }}" alt="Kein Bild vorhanden" class="w-full">
-                        {% endif %}
-
-                        <div class="hover:bg-transparent transition duration-300 absolute bottom-0 top-0 right-0 left-0 bg-gray-900 opacity-25">
-                        </div>
-                        </a>
-                        <div class="absolute top-0 left-0 w-full">
-                            {% for category in recipe.categories %}
-                                <div class="inline-block text-xs bg-indigo-600 px-4 py-2 text-white mt-3 mr-3 hover:bg-white hover:text-indigo-600 transition duration-500 ease-in-out">
-                                    {{ category.name }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="px-6 py-4 mb-auto">
-                        <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
-                           class="font-medium text-lg inline-block hover:text-indigo-600 transition duration-500 ease-in-out inline-block mb-2">{{ recipe.title }}</a>
-                        <p class="text-gray-500 text-sm">
-                            {{ recipe.text }}
-                        </p>
-                    </div>
-                    <div class="px-6 py-3 flex flex-row items-center justify-between bg-gray-100">
-                        {% if app.user == recipe.owner %}
-                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="py-1 text-xs font-regular text-gray-900 mr-1 flex flex-row items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6" height="13px" width="13px">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                </svg>
-                                <span class="ml-1">edit</span>
-                            </a>
-                        {% endif %}
-                        <span href="#"
-                              class="py-1 text-xs font-regular text-gray-900 mr-1 flex flex-row items-center">
-                            <svg class="h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z">
-                                </path>
-                            </svg>
-                            <span class="ml-1">Kommentare:</strong> {{ recipe.commentCount }}</span>
-                        </span>
-                    </div>
-                </div>
-
-                {% else %}
-                    no records found
-                {% endfor %}
+    {# ── Hero ───────────────────────────────────────────────────── #}
+    <section class="px-6 pt-16 pb-10 text-center">
+        <p class="mb-3 text-sm font-medium uppercase tracking-[0.18em] text-pinegreen">Willkommen</p>
+        <h1 class="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-[#1d1d1f] sm:text-6xl">
+            Koch dich glücklich.
+        </h1>
+        <p class="mx-auto mt-4 max-w-xl text-lg text-gray-500">
+            Entdecke handverlesene Rezepte — klar, schön und zum Nachkochen gemacht.
+        </p>
+        {% if is_granted('ROLE_USER') %}
+            <div class="mt-7">
+                <a href="{{ path('app_recipe_new') }}"
+                   class="inline-flex items-center gap-2 rounded-full bg-pinegreen px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-pinegreen-40">
+                    Rezept teilen
+                    <span aria-hidden="true">→</span>
+                </a>
             </div>
-        </section>
+        {% endif %}
+    </section>
+
+    <main class="mx-auto max-w-7xl px-6 pb-10">
+
+        {# ── Top leaderboard ad ─────────────────────────────────── #}
+        <div class="mb-12">
+            {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+        </div>
+
+        {# ── Content + sidebar layout ───────────────────────────── #}
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_336px]">
+
+            {# ── Recipe grid ────────────────────────────────────── #}
+            <section>
+                <div class="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                    {% for recipe in recipes %}
+                        <article class="card-lift group flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+                            <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="relative block aspect-[4/3] overflow-hidden">
+                                {% if recipe.teaserImage %}
+                                    <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }}"
+                                         class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
+                                {% else %}
+                                    {% set random_index = random(range(0, random_images|length - 1)) %}
+                                    <img src="{{ asset(random_images[random_index]) }}" alt="Kein Bild vorhanden"
+                                         class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
+                                {% endif %}
+                                <div class="absolute inset-x-0 top-0 flex flex-wrap gap-2 p-3">
+                                    {% for category in recipe.categories %}
+                                        <span class="rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+                                            {{ category.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </a>
+                            <div class="flex flex-1 flex-col p-6">
+                                <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
+                                   class="text-lg font-semibold tracking-tight text-[#1d1d1f] transition-colors group-hover:text-pinegreen">
+                                    {{ recipe.title }}
+                                </a>
+                                <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-500">
+                                    {{ recipe.text }}
+                                </p>
+                                <div class="mt-5 flex items-center justify-between border-t border-black/5 pt-4 text-xs text-gray-400">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                        </svg>
+                                        {{ recipe.commentCount }} Kommentare
+                                    </span>
+                                    {% if app.user == recipe.owner %}
+                                        <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}"
+                                           class="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-pinegreen transition-colors">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                            </svg>
+                                            Bearbeiten
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+
+                        {# In-feed ad after every 4th recipe #}
+                        {% if loop.index is divisible by(4) and not loop.last %}
+                            <div class="sm:col-span-2">
+                                {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="sm:col-span-2 rounded-3xl bg-white p-16 text-center ring-1 ring-black/5">
+                            <p class="text-2xl">🍽️</p>
+                            <p class="mt-3 text-lg font-medium text-[#1d1d1f]">Noch keine Rezepte</p>
+                            <p class="mt-1 text-sm text-gray-500">Sei der Erste und teile dein Lieblingsrezept.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            {# ── Sticky ad sidebar ──────────────────────────────── #}
+            <aside class="hidden lg:block">
+                <div class="sticky top-24 space-y-8">
+                    {{ include('partials/_ad.html.twig', { format: 'rectangle' }) }}
+                    {{ include('partials/_ad.html.twig', { format: 'skyscraper' }) }}
+                </div>
+            </aside>
+        </div>
     </main>
 {% endblock %}
