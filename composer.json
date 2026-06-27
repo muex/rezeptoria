@@ -25,7 +25,7 @@
         "symfony/twig-bundle": "7.4.*",
         "symfony/ux-turbo": "^2.36",
         "symfony/validator": "7.4.*",
-        "symfony/webpack-encore-bundle": "^2.4",
+        "symfony/webpack-encore-bundle": "^2.4.1",
         "symfony/yaml": "7.4.*",
         "symfonycasts/tailwind-bundle": "^0.7.1",
         "twig/extra-bundle": "^2.12|^3.24.0",
