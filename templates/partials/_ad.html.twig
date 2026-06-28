@@ -1,38 +1,36 @@
 {#
-  Reusable advertisement slot — Apple-style, unobtrusive placeholder.
+  Reusable advertisement slot — Apple-style, unobtrusive.
 
-  Drop your real ad network code (e.g. Google AdSense <ins class="adsbygoogle">)
-  inside the marked area to activate a slot.
+  The slot renders *only* when real ad markup is supplied via the `code`
+  param (e.g. a Google AdSense <ins class="adsbygoogle"> snippet). Without
+  it nothing is output, so empty placeholders never take up space.
 
   Params:
+    code   : the ad network markup to embed. When empty the slot is hidden.
     format : 'leaderboard' | 'rectangle' | 'skyscraper' | 'infeed'  (default 'rectangle')
     label  : override the small disclosure label  (default 'Anzeige')
 #}
-{% set format = format|default('rectangle') %}
-{% set label  = label|default('Anzeige') %}
+{% set code = code|default('')|trim %}
 
-{% set sizes = {
-    'leaderboard': 'w-full min-h-[90px] md:min-h-[120px]',
-    'rectangle':   'w-full max-w-[336px] min-h-[280px] mx-auto',
-    'skyscraper':  'w-full min-h-[600px]',
-    'infeed':      'w-full min-h-[320px] h-full'
-} %}
+{% if code is not empty %}
+    {% set format = format|default('rectangle') %}
+    {% set label  = label|default('Anzeige') %}
 
-<aside class="ad-slot group {{ sizes[format] ?? sizes['rectangle'] }} relative flex flex-col items-center justify-center
-              rounded-3xl border border-black/5 bg-white/60 backdrop-blur-xl
-              text-center overflow-hidden"
-       aria-label="{{ label }}">
-    <span class="absolute top-3 left-4 text-[10px] font-medium uppercase tracking-[0.12em] text-gray-400">
-        {{ label }}
-    </span>
+    {% set sizes = {
+        'leaderboard': 'w-full min-h-[90px] md:min-h-[120px]',
+        'rectangle':   'w-full max-w-[336px] min-h-[280px] mx-auto',
+        'skyscraper':  'w-full min-h-[600px]',
+        'infeed':      'w-full min-h-[320px] h-full'
+    } %}
 
-    {# ── Ad network code goes here ─────────────────────────────── #}
-    <div class="ad-slot__placeholder flex flex-col items-center justify-center gap-1 px-6 py-8 text-gray-300">
-        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3.75 5.25h16.5v13.5H3.75zM3.75 9h16.5M8.25 9v9.75" />
-        </svg>
-        <span class="text-xs font-medium tracking-wide text-gray-400">Werbefläche</span>
-    </div>
-    {# ──────────────────────────────────────────────────────────── #}
-</aside>
+    <aside class="ad-slot group {{ sizes[format] ?? sizes['rectangle'] }} relative flex flex-col items-center justify-center
+                  rounded-3xl border border-black/5 bg-white/60 backdrop-blur-xl
+                  text-center overflow-hidden"
+           aria-label="{{ label }}">
+        <span class="absolute top-3 left-4 text-[10px] font-medium uppercase tracking-[0.12em] text-gray-400">
+            {{ label }}
+        </span>
+
+        {{ code|raw }}
+    </aside>
+{% endif %}
