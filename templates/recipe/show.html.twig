@@ -75,9 +75,11 @@
             {% endif %}
         {% endif %}
 
-        <div class="my-10">
-            {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
-        </div>
+        {% if ad_code|trim %}
+            <div class="my-10">
+                {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+            </div>
+        {% endif %}
 
         <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Kommentare</h2>
 

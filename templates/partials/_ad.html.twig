@@ -6,11 +6,17 @@
   it nothing is output, so empty placeholders never take up space.
 
   Params:
-    code   : the ad network markup to embed. When empty the slot is hidden.
+    code   : the ad network markup to embed. Defaults to the `ad_code` Twig
+             global (see the parameter of the same name in config/services.yaml).
+             When empty the slot is hidden.
     format : 'leaderboard' | 'rectangle' | 'skyscraper' | 'infeed'  (default 'rectangle')
     label  : override the small disclosure label  (default 'Anzeige')
+
+  Callers that also reserve layout space for a slot (a wrapper with margins, a
+  grid column) must guard it with `{% if ad_code|trim %}`, otherwise the empty
+  slot still leaves a hole.
 #}
-{% set code = code|default('')|trim %}
+{% set code = code|default(ad_code)|trim %}
 
 {% if code is not empty %}
     {% set format = format|default('rectangle') %}

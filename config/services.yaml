@@ -5,6 +5,12 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     images_directory: '%kernel.project_dir%/public/uploads/images'
+
+    # Default ad network markup (e.g. a Google AdSense <ins> tag), exposed to
+    # Twig as `ad_code`. While it is empty no ad slot renders — and no layout
+    # space is reserved for one. Individual slots may override it by passing
+    # `code:` to partials/_ad.html.twig.
+    ad_code: ''
 services:
     # default configuration for services in *this* file
     _defaults:
