@@ -11,7 +11,7 @@
     </div>
 
     {# ── Sections (manually rendered so we control the HTML structure) ── #}
-    <div id="sections-wrapper" data-index="{{ form.sections|length }}">
+    <div id="sections-wrapper" data-controller="recipe-form" data-index="{{ form.sections|length }}">
 
         <h3 class="font-semibold text-gray-800 mb-3">Abschnitte</h3>
 
@@ -141,85 +141,3 @@
         <button type="button" class="remove-ingredient-btn text-red-400 hover:text-red-600 px-1">×</button>
     </div>
 </template>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var sectionsWrapper = document.getElementById('sections-wrapper');
-    var sectionsList    = document.getElementById('sections-list');
-
-    function setupIngredientButtons(sectionEl) {
-        var ingredientsWrapper = sectionEl.querySelector('.ingredients-wrapper');
-        if (!ingredientsWrapper) return;
-
-        sectionEl.querySelector('.add-ingredient-btn')
-            .addEventListener('click', function () { addIngredient(sectionEl, ingredientsWrapper); });
-
-        sectionEl.querySelectorAll('.remove-ingredient-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () { btn.closest('.ingredient-item').remove(); });
-        });
-    }
-
-    function addIngredient(sectionEl, ingredientsWrapper) {
-        var sectionIndex = sectionEl.dataset.sectionIndex;
-        var ingIndex     = parseInt(ingredientsWrapper.dataset.index || '0');
-        ingredientsWrapper.dataset.index = ingIndex + 1;
-
-        var tmpl   = document.getElementById('ingredient-template');
-        var clone  = document.importNode(tmpl.content, true);
-        var itemEl = clone.querySelector('.ingredient-item');
-
-        itemEl.querySelectorAll('[name]').forEach(function (el) {
-            el.name = el.name
-                .replace(/__section__/g, sectionIndex)
-                .replace(/__ingredient__/g, ingIndex);
-        });
-        itemEl.querySelectorAll('[id]').forEach(function (el) {
-            el.id = el.id
-                .replace(/__section__/g, sectionIndex)
-                .replace(/__ingredient__/g, ingIndex);
-        });
-
-        itemEl.querySelector('.remove-ingredient-btn')
-            .addEventListener('click', function () { itemEl.remove(); });
-
-        ingredientsWrapper.querySelector('.ingredients-list').appendChild(itemEl);
-    }
-
-    function addSection() {
-        var sectionIndex = parseInt(sectionsWrapper.dataset.index || '0');
-        sectionsWrapper.dataset.index = sectionIndex + 1;
-
-        var tmpl      = document.getElementById('section-template');
-        var clone     = document.importNode(tmpl.content, true);
-        var sectionEl = clone.querySelector('.section-item');
-
-        // Store section index for ingredient creation later
-        sectionEl.dataset.sectionIndex = sectionIndex;
-
-        sectionEl.querySelectorAll('[name]').forEach(function (el) {
-            el.name = el.name.replace(/__section__/g, sectionIndex);
-        });
-        sectionEl.querySelectorAll('[id]').forEach(function (el) {
-            el.id = el.id.replace(/__section__/g, sectionIndex);
-        });
-        sectionEl.querySelectorAll('[for]').forEach(function (el) {
-            el.htmlFor = el.htmlFor.replace(/__section__/g, sectionIndex);
-        });
-
-        sectionEl.querySelector('.remove-section-btn')
-            .addEventListener('click', function () { sectionEl.remove(); });
-
-        setupIngredientButtons(sectionEl);
-        sectionsList.appendChild(sectionEl);
-    }
-
-    document.getElementById('add-section-btn').addEventListener('click', addSection);
-
-    // Wire up sections rendered server-side (edit mode)
-    document.querySelectorAll('.section-item').forEach(function (sectionEl) {
-        sectionEl.querySelector('.remove-section-btn')
-            .addEventListener('click', function () { sectionEl.remove(); });
-        setupIngredientButtons(sectionEl);
-    });
-});
-</script>
