@@ -1,35 +1,48 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Category index{% endblock %}
+{% block title %}Kategorien — Rezeptoria{% endblock %}
 
 {% block body %}
-    <h1>Category index</h1>
+<div class="mx-auto max-w-3xl px-6 pb-16 pt-10">
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for category in categories %}
-            <tr>
-                <td>{{ category.id }}</td>
-                <td>{{ category.name }}</td>
-                <td>
-                    <a href="{{ path('app_category_show', {'id': category.id}) }}">show</a>
-                    <a href="{{ path('app_category_edit', {'id': category.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Kategorien</h1>
+            <p class="mt-2 text-sm text-gray-500">Verwalte die Kategorien, die Rezepten zugeordnet werden können.</p>
+        </div>
+        <a href="{{ path('app_category_new') }}" class="btn btn-primary">Neue Kategorie</a>
+    </div>
 
-    <a href="{{ path('app_category_new') }}">Create new</a>
+    <div class="mt-8 overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-black/5 text-xs uppercase tracking-[0.12em] text-gray-500">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-medium">Name</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Rezepte</th>
+                        <th scope="col" class="px-6 py-4 text-right font-medium">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-black/5">
+                {% for category in categories %}
+                    <tr class="transition-colors hover:bg-[#f5f5f7]">
+                        <td class="px-6 py-4 font-medium text-[#1d1d1f]">{{ category.name }}</td>
+                        <td class="px-6 py-4 tabular-nums text-gray-500">{{ category.recipes|length }}</td>
+                        <td class="whitespace-nowrap px-6 py-4 text-right">
+                            <a href="{{ path('app_category_show', {'id': category.id}) }}"
+                               class="font-medium text-gray-500 transition-colors hover:text-pinegreen">Ansehen</a>
+                            <a href="{{ path('app_category_edit', {'id': category.id}) }}"
+                               class="ml-4 font-medium text-gray-500 transition-colors hover:text-pinegreen">Bearbeiten</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">Noch keine Kategorien angelegt.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

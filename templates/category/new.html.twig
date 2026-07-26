@@ -1,11 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Category{% endblock %}
+{% block title %}Neue Kategorie — Rezeptoria{% endblock %}
 
 {% block body %}
-    <h1>Create new Category</h1>
+<div class="mx-auto max-w-lg px-6 pb-16 pt-10">
 
-    {{ include('category/_form.html.twig') }}
+    <a href="{{ path('app_category_index') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zu den Kategorien
+    </a>
 
-    <a href="{{ path('app_category_index') }}">back to list</a>
+    <div class="mt-6 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Neue Kategorie</h1>
+
+        <div class="mt-8">
+            {{ include('category/_form.html.twig') }}
+        </div>
+    </div>
+</div>
 {% endblock %}

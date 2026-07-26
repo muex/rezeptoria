@@ -52,6 +52,10 @@
                         </svg>
                         Neues Rezept
                     </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a class="hidden font-medium text-gray-600 transition-colors hover:text-[#1d1d1f] sm:inline"
+                           href="{{ path('app_category_index') }}">Kategorien</a>
+                    {% endif %}
                     <span class="hidden md:inline font-medium text-gray-500">{{ app.user.userIdentifier }}</span>
                     <a class="font-medium text-gray-600 hover:text-[#1d1d1f] transition-colors" href="{{ path('app_logout') }}">Abmelden</a>
                 {% else %}

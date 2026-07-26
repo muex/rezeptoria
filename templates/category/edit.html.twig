@@ -1,13 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Category{% endblock %}
+{% block title %}Kategorie bearbeiten — Rezeptoria{% endblock %}
 
 {% block body %}
-    <h1>Edit Category</h1>
+<div class="mx-auto max-w-lg px-6 pb-16 pt-10">
 
-    {{ include('category/_form.html.twig', {'button_label': 'Update'}) }}
+    <a href="{{ path('app_category_index') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zu den Kategorien
+    </a>
 
-    <a href="{{ path('app_category_index') }}">back to list</a>
+    <div class="mt-6 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Kategorie bearbeiten</h1>
 
-    {{ include('category/_delete_form.html.twig') }}
+        <div class="mt-8">
+            {{ include('category/_form.html.twig', {'button_label': 'Änderungen speichern'}) }}
+        </div>
+    </div>
+
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-white/60 p-6 ring-1 ring-black/5">
+        <div>
+            <p class="text-sm font-medium text-[#1d1d1f]">Kategorie löschen</p>
+            <p class="mt-1 text-sm text-gray-500">Die Zuordnung zu Rezepten geht dabei verloren.</p>
+        </div>
+        {{ include('category/_delete_form.html.twig') }}
+    </div>
+</div>
 {% endblock %}
