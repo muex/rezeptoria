@@ -1,59 +1,70 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ recipe.title }}{% endblock %}
+{% block title %}{{ recipe.title }} — Rezeptoria{% endblock %}
 
 {% block body %}
-<div class="mx-auto max-w-3xl px-6 py-12">
-    <div class="bg-white rounded-3xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 p-8 sm:p-10">
+<div class="mx-auto max-w-3xl px-6 pb-16 pt-10">
 
-        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">{{ recipe.title }}</h1>
+    <a href="{{ path('app_recipe_index') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zur Übersicht
+    </a>
 
-        {% if recipe.teaserImage %}
-            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }} Image" class="w-full rounded-lg mb-6">
+    <article class="mt-6 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-10">
+
+        {% if recipe.categories|length > 0 %}
+            <div class="mb-4 flex flex-wrap gap-2">
+                {% for category in recipe.categories %}
+                    <span class="rounded-full bg-pinegreen/10 px-3 py-1 text-xs font-medium text-pinegreen">
+                        {{ category.name }}
+                    </span>
+                {% endfor %}
+            </div>
         {% endif %}
 
+        <h1 class="text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">{{ recipe.title }}</h1>
+
         {% if recipe.text %}
-            <p class="text-gray-700 mb-6">{{ recipe.text }}</p>
+            <p class="mt-4 text-lg leading-relaxed text-gray-500">{{ recipe.text }}</p>
+        {% endif %}
+
+        {% if recipe.teaserImage %}
+            <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }}"
+                 class="mt-8 aspect-[16/9] w-full rounded-2xl object-cover ring-1 ring-black/5">
         {% endif %}
 
         {# ── Sections (new structured data) ───────────────────── #}
         {% if recipe.sections|length > 0 %}
 
             {# Portion calculator #}
-            <div class="flex items-center gap-3 mb-8 p-3 bg-gray-50 rounded-lg border border-gray-200 w-fit">
-                <span class="text-sm font-medium text-gray-700">Portionen:</span>
-                <button type="button" id="btn-decrease"
-                        class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold">−</button>
-                <span id="current-servings" class="w-8 text-center font-semibold text-gray-900"
+            <div class="mt-8 flex w-fit items-center gap-3 rounded-2xl bg-[#f5f5f7] px-4 py-3 ring-1 ring-black/5">
+                <span class="text-sm font-medium text-gray-700">Portionen</span>
+                <button type="button" id="btn-decrease" aria-label="Weniger Portionen"
+                        class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-medium text-gray-600 ring-1 ring-black/5 transition-colors hover:text-pinegreen">−</button>
+                <span id="current-servings" class="w-8 text-center font-semibold tabular-nums text-[#1d1d1f]"
                       data-base="{{ recipe.baseServings }}">{{ recipe.baseServings }}</span>
-                <button type="button" id="btn-increase"
-                        class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 font-bold">+</button>
+                <button type="button" id="btn-increase" aria-label="Mehr Portionen"
+                        class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg font-medium text-gray-600 ring-1 ring-black/5 transition-colors hover:text-pinegreen">+</button>
             </div>
 
             {% for section in recipe.sections %}
-                <div class="mb-8">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+                <section class="mt-10">
+                    <h2 class="border-b border-black/5 pb-2 text-xl font-semibold tracking-tight text-[#1d1d1f]">
                         {{ section.title }}
                     </h2>
 
                     {% if section.ingredients|length > 0 %}
-                        <h3 class="font-medium text-gray-700 mb-2">Zutaten</h3>
-                        <ul class="space-y-1 mb-4">
+                        <h3 class="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Zutaten</h3>
+                        <ul class="mt-3 space-y-1.5">
                             {% for ingredient in section.ingredients %}
-                                <li class="flex items-baseline gap-2 text-gray-700">
-                                    {% if ingredient.amount %}
-                                        <span class="ingredient-amount font-medium w-12 text-right tabular-nums"
-                                              data-base-amount="{{ ingredient.amount }}">
+                                <li class="grid grid-cols-[3.5rem_4.5rem_1fr] items-baseline gap-2 text-gray-700">
+                                    <span class="{{ ingredient.amount ? 'ingredient-amount' : '' }} text-right font-medium tabular-nums text-[#1d1d1f]"
+                                          {% if ingredient.amount %}data-base-amount="{{ ingredient.amount }}"{% endif %}>
+                                        {%- if ingredient.amount -%}
                                             {{ ingredient.amount|number_format(ingredient.amount == ingredient.amount|round ? 0 : 2, ',', '.') }}
-                                        </span>
-                                    {% else %}
-                                        <span class="w-12"></span>
-                                    {% endif %}
-                                    {% if ingredient.unit %}
-                                        <span class="text-gray-500 w-14">{{ ingredient.unit }}</span>
-                                    {% else %}
-                                        <span class="w-14"></span>
-                                    {% endif %}
+                                        {%- endif -%}
+                                    </span>
+                                    <span class="text-gray-500">{{ ingredient.unit }}</span>
                                     <span>{{ ingredient.name }}</span>
                                 </li>
                             {% endfor %}
@@ -61,50 +72,66 @@
                     {% endif %}
 
                     {% if section.preparation %}
-                        <h3 class="font-medium text-gray-700 mb-2">Zubereitung</h3>
-                        <p class="text-gray-700 whitespace-pre-line">{{ section.preparation }}</p>
+                        <h3 class="mt-6 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Zubereitung</h3>
+                        <p class="mt-3 whitespace-pre-line leading-relaxed text-gray-700">{{ section.preparation }}</p>
                     {% endif %}
-                </div>
+                </section>
             {% endfor %}
 
         {% else %}
             {# ── Fallback for old plain-text recipes ─────────── #}
             {% if recipe.ingredients %}
-                <h3 class="font-semibold text-gray-800 mb-2">Zutaten</h3>
-                <p class="text-gray-700 whitespace-pre-line mb-6">{{ recipe.ingredients }}</p>
+                <h3 class="mt-8 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Zutaten</h3>
+                <p class="mt-3 whitespace-pre-line leading-relaxed text-gray-700">{{ recipe.ingredients }}</p>
             {% endif %}
         {% endif %}
 
-        {% if ad_code|trim %}
-            <div class="my-10">
-                {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+        {% if app.user == recipe.owner %}
+            <div class="mt-10 flex flex-wrap items-center gap-3 border-t border-black/5 pt-6">
+                <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-outline">Bearbeiten</a>
+                {{ include('recipe/_delete_form.html.twig') }}
             </div>
         {% endif %}
+    </article>
 
-        <h2 class="text-xl font-semibold text-gray-800 mt-8 mb-4">Kommentare</h2>
+    {% if ad_code|trim %}
+        <div class="my-10">
+            {{ include('partials/_ad.html.twig', { format: 'leaderboard' }) }}
+        </div>
+    {% endif %}
 
-        {% for comment in recipe.comments %}
-            <div class="border-b border-gray-100 py-3">
-                <p class="text-gray-700">{{ comment.text }}</p>
-                <small class="text-gray-400">Geschrieben von {{ comment.createdUser.username }} am {{ comment.createdAt|date('d.m.Y H:i') }}</small>
-            </div>
-        {% endfor %}
+    {# ── Comments ─────────────────────────────────────────────── #}
+    <section class="mt-10 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-10">
+        <h2 class="text-xl font-semibold tracking-tight text-[#1d1d1f]">
+            Kommentare
+            <span class="ml-1 text-base font-normal text-gray-400">{{ recipe.comments|length }}</span>
+        </h2>
+
+        {% if recipe.comments|length > 0 %}
+            <ul class="mt-6 divide-y divide-black/5">
+                {% for comment in recipe.comments %}
+                    <li class="py-4 first:pt-0 last:pb-0">
+                        <p class="leading-relaxed text-gray-700">{{ comment.text }}</p>
+                        <p class="mt-1.5 text-xs text-gray-400">
+                            {{ comment.createdUser.username }} · {{ comment.createdAt|date('d.m.Y H:i') }}
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mt-4 text-sm text-gray-500">Noch keine Kommentare — sei der Erste.</p>
+        {% endif %}
 
         {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-            <h3 class="font-semibold text-gray-800 mt-6 mb-3">Neuer Kommentar</h3>
-            {{ render(controller('App\\Controller\\RecipeController::commentForm', {'recipe': recipe.id})) }}
+            <div class="mt-8 border-t border-black/5 pt-6">
+                {{ render(controller('App\\Controller\\RecipeController::commentForm', {'recipe': recipe.id})) }}
+            </div>
         {% else %}
-            <p class="text-gray-600 mt-4">Sie müssen <a href="{{ path('app_login') }}" class="text-pinegreen underline">angemeldet</a> sein, um einen Kommentar zu schreiben.</p>
+            <p class="mt-6 border-t border-black/5 pt-6 text-sm text-gray-500">
+                Du musst <a href="{{ path('app_login') }}" class="font-medium text-pinegreen hover:text-pinegreen-40">angemeldet</a> sein, um einen Kommentar zu schreiben.
+            </p>
         {% endif %}
-
-        <div class="mt-6 flex gap-4">
-            <a href="{{ path('app_recipe_index') }}" class="text-sm text-gray-500 hover:underline">← Zurück zur Liste</a>
-            {% if app.user == recipe.owner %}
-                <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="text-sm text-pinegreen hover:underline">Bearbeiten</a>
-                {{ include('recipe/_delete_form.html.twig') }}
-            {% endif %}
-        </div>
-    </div>
+    </section>
 </div>
 
 {% if recipe.sections|length > 0 %}
