@@ -26,11 +26,55 @@ h1, h2, h3 {
     letter-spacing: -0.022em;
 }
 
-/* Brand accent */
-.bg-pinegreen { background-color: #157A6E; }
-.hover\:bg-pinegreen-40:hover { background-color: #0C4941; }
-.text-pinegreen { color: #157A6E; }
-.hover\:text-pinegreen-40:hover { color: #0C4941; }
+/* Form controls and buttons.
+   These live in the components layer on purpose: utilities beat components, so
+   a caller can still override width or spacing with plain classes (w-20, py-1)
+   without fighting the base style. */
+@layer components {
+    .form-input {
+        @apply block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-[#1d1d1f]
+               shadow-sm transition-colors placeholder:text-gray-400
+               focus:border-pinegreen focus:outline-none focus:ring-2 focus:ring-pinegreen/25;
+    }
+
+    .form-input[type="file"] {
+        @apply py-1.5 pl-1.5 text-gray-500
+               file:mr-3 file:rounded-lg file:border-0 file:bg-pinegreen/10 file:px-3 file:py-1.5
+               file:text-sm file:font-medium file:text-pinegreen hover:file:bg-pinegreen/20;
+    }
+
+    .form-check {
+        @apply h-4 w-4 rounded border-gray-300 text-pinegreen focus:ring-pinegreen/40;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium
+               transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+
+    .btn-primary {
+        @apply bg-pinegreen text-white shadow-sm hover:bg-pinegreen-40 focus:ring-pinegreen/40;
+    }
+
+    .btn-outline {
+        @apply border border-pinegreen/40 text-pinegreen hover:bg-pinegreen hover:text-white focus:ring-pinegreen/40;
+    }
+
+    .btn-danger {
+        @apply border border-red-200 text-red-600 hover:bg-red-600 hover:text-white focus:ring-red-300;
+    }
+}
+
+/* Sections are numbered with a CSS counter so the labels stay correct when a
+   section is added or removed client-side. */
+#sections-list {
+    counter-reset: section;
+}
+
+.section-item .section-number::before {
+    counter-increment: section;
+    content: "Abschnitt " counter(section);
+}
 
 /* Subtle card lift used across recipe cards */
 .card-lift {

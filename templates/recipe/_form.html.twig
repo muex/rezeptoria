@@ -4,43 +4,52 @@
     {{ form_row(form.title) }}
     {{ form_row(form.text) }}
 
-    <div class="flex items-center gap-3">
-        <label class="font-medium text-gray-700 text-sm">Grundmenge für</label>
-        {{ form_widget(form.baseServings, {attr: {class: 'w-20 border border-gray-300 rounded px-2 py-1 text-sm', min: 1}}) }}
-        <span class="text-sm text-gray-600">Portionen</span>
+    <div class="flex flex-wrap items-center gap-3">
+        <label class="text-sm font-medium text-gray-700" for="{{ form.baseServings.vars.id }}">Grundmenge für</label>
+        {{ form_widget(form.baseServings, {attr: {class: 'w-20', min: 1}}) }}
+        <span class="text-sm text-gray-500">Portionen</span>
     </div>
 
     {# ── Sections (manually rendered so we control the HTML structure) ── #}
     <div id="sections-wrapper" data-controller="recipe-form" data-index="{{ form.sections|length }}">
 
-        <h3 class="font-semibold text-gray-800 mb-3">Abschnitte</h3>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Abschnitte</h2>
 
         <div id="sections-list" class="space-y-4">
             {% for section in form.sections %}
-                <div class="section-item border border-gray-200 rounded-lg p-4 bg-gray-50"
+                <div class="section-item rounded-2xl bg-[#f5f5f7] p-5 ring-1 ring-black/5"
                      data-section-index="{{ loop.index0 }}">
 
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="font-medium text-gray-700">Abschnitt</span>
-                        <button type="button" class="remove-section-btn text-red-500 text-sm hover:text-red-700">× Entfernen</button>
+                    <div class="mb-4 flex items-center justify-between">
+                        <span class="section-number text-sm font-semibold text-[#1d1d1f]"></span>
+                        <button type="button"
+                                class="remove-section-btn text-sm font-medium text-gray-400 transition-colors hover:text-red-600">
+                            Entfernen
+                        </button>
                     </div>
 
                     {{ form_row(section.title, {label: 'Titel des Abschnitts'}) }}
 
                     <div class="ingredients-wrapper mt-4"
                          data-index="{{ section.ingredients|length }}">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Zutaten</p>
+                        <p class="mb-2 text-sm font-medium text-gray-700">Zutaten</p>
                         <div class="ingredients-list space-y-2">
                             {% for ingredient in section.ingredients %}
-                                <div class="ingredient-item flex items-center gap-2">
+                                <div class="ingredient-item flex flex-wrap items-center gap-2">
                                     {{ form_widget(ingredient.amount) }}
                                     {{ form_widget(ingredient.unit) }}
                                     {{ form_widget(ingredient.name) }}
-                                    <button type="button" class="remove-ingredient-btn text-red-400 hover:text-red-600 px-1">×</button>
+                                    <button type="button"
+                                            class="remove-ingredient-btn shrink-0 rounded-full p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                                            aria-label="Zutat entfernen">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
                             {% endfor %}
                         </div>
-                        <button type="button" class="add-ingredient-btn mt-2 text-sm text-pinegreen hover:underline">
+                        <button type="button" class="add-ingredient-btn mt-3 text-sm font-medium text-pinegreen hover:text-pinegreen-40">
                             + Zutat hinzufügen
                         </button>
                     </div>
@@ -50,8 +59,7 @@
             {% endfor %}
         </div>
 
-        <button type="button" id="add-section-btn"
-                class="mt-4 border border-pinegreen text-pinegreen px-4 py-2 rounded-lg text-sm hover:bg-pinegreen hover:text-white transition-colors">
+        <button type="button" id="add-section-btn" class="btn btn-outline mt-4">
             + Abschnitt hinzufügen
         </button>
     </div>
@@ -60,9 +68,11 @@
     {{ form_row(form.categories) }}
 </div>
 
-<button class="w-full bg-pinegreen hover:bg-pinegreen-40 text-white font-medium py-2.5 rounded-lg transition-colors mt-6">
-    {{ button_label|default('Speichern') }}
-</button>
+<div class="mt-8 border-t border-black/5 pt-6">
+    <button type="submit" class="btn btn-primary w-full">
+        {{ button_label|default('Speichern') }}
+    </button>
+</div>
 
 {#
   Render the CSRF token manually. We use render_rest:false on form_end below
@@ -78,6 +88,11 @@
    JS <template> elements – outside the <form> so Symfony's form rendering
    system never touches them.
 
+   The markup here must stay visually identical to the server-rendered
+   sections above, otherwise a recipe being edited shows two different-looking
+   kinds of row. Shared styling lives in the `form-input` component class, so
+   both paths pick up the same look.
+
    Field names follow the stable Symfony convention:
      recipe[sections][SECTION_IDX][...]
      recipe[sections][SECTION_IDX][ingredients][INGREDIENT_IDX][...]
@@ -88,56 +103,66 @@
    ────────────────────────────────────────────────────────────────────────── #}
 
 <template id="section-template">
-    <div class="section-item border border-gray-200 rounded-lg p-4 bg-gray-50">
-        <div class="flex justify-between items-center mb-3">
-            <span class="font-medium text-gray-700">Abschnitt</span>
-            <button type="button" class="remove-section-btn text-red-500 text-sm hover:text-red-700">× Entfernen</button>
+    <div class="section-item rounded-2xl bg-[#f5f5f7] p-5 ring-1 ring-black/5">
+        <div class="mb-4 flex items-center justify-between">
+            <span class="section-number text-sm font-semibold text-[#1d1d1f]"></span>
+            <button type="button"
+                    class="remove-section-btn text-sm font-medium text-gray-400 transition-colors hover:text-red-600">
+                Entfernen
+            </button>
         </div>
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+        <div class="mb-5">
+            <label class="mb-1 block text-sm font-medium text-gray-700"
                    for="recipe_sections___section___title">Titel des Abschnitts</label>
             <input type="text"
                    id="recipe_sections___section___title"
                    name="recipe[sections][__section__][title]"
-                   class="w-full border border-gray-300 rounded px-3 py-2">
+                   placeholder="z.B. Kuchenboden, Teig, Sauce …"
+                   class="form-input">
         </div>
         <div class="ingredients-wrapper mt-4" data-index="0">
-            <p class="text-sm font-medium text-gray-700 mb-2">Zutaten</p>
+            <p class="mb-2 text-sm font-medium text-gray-700">Zutaten</p>
             <div class="ingredients-list space-y-2"></div>
-            <button type="button" class="add-ingredient-btn mt-2 text-sm text-pinegreen hover:underline">
+            <button type="button" class="add-ingredient-btn mt-3 text-sm font-medium text-pinegreen hover:text-pinegreen-40">
                 + Zutat hinzufügen
             </button>
         </div>
-        <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1"
+        <div class="mt-5">
+            <label class="mb-1 block text-sm font-medium text-gray-700"
                    for="recipe_sections___section___preparation">Zubereitung</label>
             <textarea id="recipe_sections___section___preparation"
                       name="recipe[sections][__section__][preparation]"
                       rows="5"
                       placeholder="Zubereitungsschritte …"
-                      class="w-full border border-gray-300 rounded px-3 py-2"></textarea>
+                      class="form-input"></textarea>
         </div>
     </div>
 </template>
 
 <template id="ingredient-template">
-    <div class="ingredient-item flex items-center gap-2">
+    <div class="ingredient-item flex flex-wrap items-center gap-2">
         <input type="number"
                id="recipe_sections___section___ingredients___ingredient___amount"
                name="recipe[sections][__section__][ingredients][__ingredient__][amount]"
                step="any"
                placeholder="Menge"
-               class="w-24 border border-gray-300 rounded px-2 py-1 text-sm">
+               class="w-20 form-input">
         <input type="text"
                id="recipe_sections___section___ingredients___ingredient___unit"
                name="recipe[sections][__section__][ingredients][__ingredient__][unit]"
                placeholder="Einheit"
-               class="w-24 border border-gray-300 rounded px-2 py-1 text-sm">
+               class="w-24 form-input">
         <input type="text"
                id="recipe_sections___section___ingredients___ingredient___name"
                name="recipe[sections][__section__][ingredients][__ingredient__][name]"
                placeholder="Zutat"
-               class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm">
-        <button type="button" class="remove-ingredient-btn text-red-400 hover:text-red-600 px-1">×</button>
+               class="min-w-[8rem] flex-1 form-input">
+        <button type="button"
+                class="remove-ingredient-btn shrink-0 rounded-full p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                aria-label="Zutat entfernen">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 </template>

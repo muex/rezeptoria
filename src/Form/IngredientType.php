@@ -14,21 +14,24 @@ class IngredientType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // The three fields sit side by side in one flex row (see the
+        // .ingredient-item markup in recipe/_form.html.twig), so they carry
+        // width classes only. Everything else comes from the form theme.
         $builder
             ->add('amount', NumberType::class, [
                 'label' => false,
                 'required' => false,
                 'scale' => 2,
-                'attr' => ['placeholder' => 'Menge', 'class' => 'w-24 border border-gray-300 rounded px-2 py-1 text-sm'],
+                'attr' => ['placeholder' => 'Menge', 'class' => 'w-20'],
             ])
             ->add('unit', TextType::class, [
                 'label' => false,
                 'required' => false,
-                'attr' => ['placeholder' => 'Einheit', 'class' => 'w-24 border border-gray-300 rounded px-2 py-1 text-sm'],
+                'attr' => ['placeholder' => 'Einheit', 'class' => 'w-24'],
             ])
             ->add('name', TextType::class, [
                 'label' => false,
-                'attr' => ['placeholder' => 'Zutat', 'class' => 'flex-1 border border-gray-300 rounded px-2 py-1 text-sm'],
+                'attr' => ['placeholder' => 'Zutat', 'class' => 'min-w-[8rem] flex-1'],
                 'constraints' => [new NotBlank()],
             ])
         ;

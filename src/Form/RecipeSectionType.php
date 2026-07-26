@@ -17,7 +17,7 @@ class RecipeSectionType extends AbstractType
         $builder
             ->add('title', TextType::class, [
                 'label' => 'Titel',
-                'attr' => ['placeholder' => 'z.B. Kuchenboden, Teig, Sauce …', 'class' => 'w-full border border-gray-300 rounded px-3 py-2'],
+                'attr' => ['placeholder' => 'z.B. Kuchenboden, Teig, Sauce …'],
             ])
             ->add('ingredients', CollectionType::class, [
                 'entry_type' => IngredientType::class,
@@ -30,7 +30,7 @@ class RecipeSectionType extends AbstractType
             ->add('preparation', TextareaType::class, [
                 'label' => 'Zubereitung',
                 'required' => false,
-                'attr' => ['rows' => 5, 'placeholder' => 'Zubereitungsschritte …', 'class' => 'w-full border border-gray-300 rounded px-3 py-2'],
+                'attr' => ['rows' => 5, 'placeholder' => 'Zubereitungsschritte …'],
             ])
         ;
     }

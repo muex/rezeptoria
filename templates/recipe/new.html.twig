@@ -1,16 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Erstelle ein neues Rezept{% endblock %}
+{% block title %}Neues Rezept — Rezeptoria{% endblock %}
 
 {% block body %}
-<div class="flex items-center justify-center p-4">
-    <div class="max-w-3xl w-full bg-white rounded-xl shadow-lg p-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Erstelle ein neues Rezept!</h1>
+<div class="mx-auto max-w-3xl px-6 pb-16 pt-10">
 
-        {{ include('recipe/_form.html.twig') }}
+    <a href="{{ path('app_recipe_index') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zur Übersicht
+    </a>
 
-        <div class="mt-6 text-center text-sm text-gray-600">
-            <a href="{{ path('app_recipe_index') }}" class="text-pinegreen hover:text-pinegreen-40 font-medium">Zurück</a>
+    <div class="mt-6 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-10">
+        <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Neues Rezept</h1>
+        <p class="mt-2 text-sm text-gray-500">
+            Teile dein Lieblingsrezept — Abschnitt für Abschnitt.
+        </p>
+
+        <div class="mt-8">
+            {{ include('recipe/_form.html.twig') }}
         </div>
     </div>
 </div>

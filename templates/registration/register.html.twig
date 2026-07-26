@@ -1,34 +1,41 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Registrieren — Rezeptoria{% endblock %}
 
 {% block body %}
-<div class="flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Registrieren</h1>
-        {{ form_start(registrationForm, {'attr': {'class': 'space-y-4'}}) }}
+<div class="mx-auto flex max-w-md flex-col px-6 pb-16 pt-16">
+    <div class="rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-8">
+        <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Registrieren</h1>
+        <p class="mt-2 text-sm text-gray-500">Leg los und teile deine Rezepte.</p>
+
+        {{ form_start(registrationForm, {'attr': {'class': 'mt-8 space-y-5'}}) }}
             <div>
-                {{ form_label(registrationForm.username, 'Benutzername', {'label_attr': {'class': 'block text-gray-700 text-sm font-medium mb-1'}}) }}
-                {{ form_widget(registrationForm.username, {'attr': {'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all'}}) }}
+                {{ form_label(registrationForm.username, 'Benutzername') }}
+                {{ form_widget(registrationForm.username) }}
                 {{ form_errors(registrationForm.username) }}
             </div>
             <div>
-                {{ form_label(registrationForm.plainPassword, 'Passwort', {'label_attr': {'class': 'block text-gray-700 text-sm font-medium mb-1'}}) }}
-                {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all'}}) }}
+                {{ form_label(registrationForm.plainPassword, 'Passwort') }}
+                {{ form_widget(registrationForm.plainPassword) }}
                 {{ form_errors(registrationForm.plainPassword) }}
             </div>
 
-            <div class="flex items-center">
-                {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'mr-2'}}) }}
-                {{ form_label(registrationForm.agreeTerms, 'Ich stimme den Nutzungsbedingungen zu', {'label_attr': {'class': 'text-sm text-gray-700'}}) }}
+            <div>
+                <div class="flex items-center gap-2">
+                    {{ form_widget(registrationForm.agreeTerms) }}
+                    {{ form_label(registrationForm.agreeTerms, 'Ich stimme den Nutzungsbedingungen zu', {'label_attr': {'class': 'text-sm text-gray-700'}}) }}
+                </div>
+                {{ form_errors(registrationForm.agreeTerms) }}
             </div>
-            {{ form_errors(registrationForm.agreeTerms) }}
-            <button type="submit" class="w-full bg-pinegreen hover:bg-pinegreen-40 text-white font-medium py-2.5 rounded-lg transition-colors">
+
+            <button type="submit" class="btn btn-primary w-full">
                 Registrieren
             </button>
         {{ form_end(registrationForm) }}
-        <p class="mt-6 text-center text-sm text-gray-600">
-            Bereits ein Konto? <a href="{{ path('app_login') }}" class="text-pinegreen hover:text-pinegreen-40 font-medium">Anmelden</a>
+
+        <p class="mt-6 text-center text-sm text-gray-500">
+            Bereits ein Konto?
+            <a href="{{ path('app_login') }}" class="font-medium text-pinegreen hover:text-pinegreen-40">Anmelden</a>
         </p>
     </div>
 </div>
