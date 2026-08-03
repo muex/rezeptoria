@@ -11,6 +11,7 @@ use App\Repository\RecipeRepository;
 use App\Security\Voter\RecipeVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -54,11 +55,12 @@ final class RecipeController extends AbstractController
                         $this->getParameter('images_directory'),
                         $newFilename
                     );
-                } catch (FileException $e) {
-                    // Handle Exception
-                }
 
-                $recipe->setTeaserImage($newFilename);
+                    $recipe->setTeaserImage($newFilename);
+                } catch (FileException) {
+                    // Keep the previous image rather than pointing at a file that was never written.
+                    $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
+                }
             }
 
             $entityManager->persist($recipe);
@@ -122,11 +124,12 @@ final class RecipeController extends AbstractController
                         $this->getParameter('images_directory'),
                         $newFilename
                     );
-                } catch (FileException $e) {
-                    // Handle Exception
-                }
 
-                $recipe->setTeaserImage($newFilename);
+                    $recipe->setTeaserImage($newFilename);
+                } catch (FileException) {
+                    // Keep the previous image rather than pointing at a file that was never written.
+                    $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
+                }
             }
             $entityManager->flush();
 
