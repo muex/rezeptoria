@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin — Rezeptoria{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-5xl px-6 pb-16 pt-10">
+
+    <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Administration</h1>
+    <p class="mt-2 text-sm text-gray-500">Benutzer und Rezepte aktivieren oder deaktivieren.</p>
+
+    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {% set stats = [
+            { label: 'Benutzer', value: user_count },
+            { label: 'Deaktivierte Benutzer', value: inactive_user_count },
+            { label: 'Rezepte', value: recipe_count },
+            { label: 'Gesperrte Rezepte', value: blocked_recipe_count }
+        ] %}
+        {% for stat in stats %}
+            <div class="rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+                <p class="text-3xl font-semibold tabular-nums tracking-tight text-[#1d1d1f]">{{ stat.value }}</p>
+                <p class="mt-1 text-xs uppercase tracking-[0.12em] text-gray-500">{{ stat.label }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <a href="{{ path('app_admin_users') }}"
+           class="card-lift block rounded-3xl bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+            <p class="text-lg font-semibold tracking-tight text-[#1d1d1f]">Benutzer verwalten</p>
+            <p class="mt-2 text-sm text-gray-500">
+                Konten deaktivieren. Deaktivierte Benutzer können sich nicht anmelden, ihre Rezepte
+                verschwinden aus der Übersicht.
+            </p>
+            <span class="mt-4 inline-block text-sm font-medium text-pinegreen">Öffnen →</span>
+        </a>
+
+        <a href="{{ path('app_admin_recipes') }}"
+           class="card-lift block rounded-3xl bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+            <p class="text-lg font-semibold tracking-tight text-[#1d1d1f]">Rezepte verwalten</p>
+            <p class="mt-2 text-sm text-gray-500">
+                Rezepte sperren. Eine Sperre kann der Besitzer nicht selbst aufheben
+                ({{ inactive_recipe_count }} vom Besitzer deaktiviert).
+            </p>
+            <span class="mt-4 inline-block text-sm font-medium text-pinegreen">Öffnen →</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

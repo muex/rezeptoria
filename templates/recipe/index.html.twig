@@ -48,7 +48,7 @@
             <section>
                 <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 {{ ads_enabled ? 'xl:grid-cols-3' : 'lg:grid-cols-3' }}">
                     {% for recipe in recipes %}
-                        <article class="card-lift group flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+                        <article class="card-lift group flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 {{ recipe.publiclyVisible ? '' : 'opacity-75' }}">
                             <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="relative block aspect-[4/3] overflow-hidden">
                                 {% if recipe.teaserImage %}
                                     <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }}"
@@ -67,6 +67,9 @@
                                 </div>
                             </a>
                             <div class="flex flex-1 flex-col p-6">
+                                {% if not recipe.publiclyVisible %}
+                                    <div class="mb-3">{{ include('recipe/_status_badge.html.twig') }}</div>
+                                {% endif %}
                                 <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
                                    class="text-lg font-semibold tracking-tight text-[#1d1d1f] transition-colors group-hover:text-pinegreen">
                                     {{ recipe.title }}
