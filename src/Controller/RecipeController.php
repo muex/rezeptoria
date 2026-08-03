@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -31,10 +32,10 @@ final class RecipeController extends AbstractController
     }
 
     #[Route('/recipe/new', name: 'app_recipe_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    #[IsGranted('ROLE_USER')]
+    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $recipe = new Recipe();
-        $user = $this->getUser();
 
         $recipe->setOwner($user);
 
@@ -151,8 +152,9 @@ final class RecipeController extends AbstractController
     }
 
     #[Route('/recipe/{id}/comment/new', name: 'app_recipe_comment_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
-    public function newComment(Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
+    public function newComment(#[CurrentUser] User $user, Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
     {
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
@@ -160,7 +162,6 @@ final class RecipeController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
 
-            $user = $this->getUser();
             $recipe->addComment($comment);
             $user->addComment($comment);
             $comment->setCreatedAt(new \DateTimeImmutable());
