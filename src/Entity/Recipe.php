@@ -53,6 +53,14 @@ class Recipe
     #[ORM\OneToMany(targetEntity: RecipeSection::class, mappedBy: 'recipe', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $sections;
 
+    /** Owner-controlled publication flag. */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $active = true;
+
+    /** Admin lock. Overrules $active and cannot be lifted by the owner. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $blockedByAdmin = false;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -222,5 +230,40 @@ class Recipe
         }
 
         return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
+    public function isBlockedByAdmin(): bool
+    {
+        return $this->blockedByAdmin;
+    }
+
+    public function setBlockedByAdmin(bool $blockedByAdmin): static
+    {
+        $this->blockedByAdmin = $blockedByAdmin;
+
+        return $this;
+    }
+
+    /**
+     * A recipe reaches the public only when the owner published it, no admin
+     * locked it and the owner's account itself is still active.
+     */
+    public function isPubliclyVisible(): bool
+    {
+        return $this->active
+            && !$this->blockedByAdmin
+            && $this->owner?->isActive() === true;
     }
 }

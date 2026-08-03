@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rezepte — Admin — Rezeptoria{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-5xl px-6 pb-16 pt-10">
+
+    <a href="{{ path('app_admin_dashboard') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zur Administration
+    </a>
+
+    <h1 class="mt-6 text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Rezepte</h1>
+    <p class="mt-2 text-sm text-gray-500">
+        Eine Sperre überstimmt die Einstellung des Besitzers — er kann sie nicht selbst aufheben.
+    </p>
+
+    <div class="mt-8 overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-black/5 text-xs uppercase tracking-[0.12em] text-gray-500">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-medium">Rezept</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Besitzer</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Status</th>
+                        <th scope="col" class="px-6 py-4 text-right font-medium">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-black/5">
+                {% for recipe in recipes %}
+                    <tr class="transition-colors hover:bg-[#f5f5f7]">
+                        <td class="px-6 py-4 font-medium text-[#1d1d1f]">
+                            <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="transition-colors hover:text-pinegreen">
+                                {{ recipe.title }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">
+                            {{ recipe.owner.username }}{% if not recipe.owner.active %} <span class="text-xs text-red-600">(deaktiviert)</span>{% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if recipe.blockedByAdmin %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 ring-1 ring-red-200">Gesperrt</span>
+                            {% elseif not recipe.active %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 ring-1 ring-amber-200">Vom Besitzer deaktiviert</span>
+                            {% elseif not recipe.publiclyVisible %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 ring-1 ring-amber-200">Konto deaktiviert</span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-pinegreen/10 px-3 py-1 text-xs font-medium text-pinegreen">Öffentlich</span>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-right">
+                            <form method="post" action="{{ path('app_admin_recipe_toggle', {'id': recipe.id}) }}" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-recipe' ~ recipe.id) }}">
+                                <button class="font-medium transition-colors {{ recipe.blockedByAdmin ? 'text-pinegreen hover:text-pinegreen-40' : 'text-red-600 hover:text-red-700' }}">
+                                    {{ recipe.blockedByAdmin ? 'Freigeben' : 'Sperren' }}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">Noch keine Rezepte vorhanden.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

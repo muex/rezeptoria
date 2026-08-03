@@ -7,13 +7,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -46,6 +47,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'createdUser')]
     private Collection $comments;
+
+    /** Admin-controlled. A deactivated user cannot log in and their recipes stay hidden. */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $active = true;
 
     public function __construct()
     {
@@ -186,5 +191,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->roles, true);
+    }
+
+    /**
+     * The user checker only runs at login, so an existing session would survive
+     * a deactivation. Reporting the reloaded user as "changed" makes Symfony
+     * drop the token on the next request instead.
+     *
+     * Password, roles and identifier are re-checked here as well, because
+     * implementing this interface replaces Symfony's default comparison.
+     */
+    public function isEqualTo(UserInterface $user): bool
+    {
+        if (!$user instanceof self || !$user->isActive()) {
+            return false;
+        }
+
+        return $user->getPassword() === $this->getPassword()
+            && $user->getUserIdentifier() === $this->getUserIdentifier()
+            && [] === array_merge(
+                array_diff($user->getRoles(), $this->getRoles()),
+                array_diff($this->getRoles(), $user->getRoles())
+            );
     }
 }

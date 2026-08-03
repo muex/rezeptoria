@@ -55,6 +55,8 @@
                     {% if is_granted('ROLE_ADMIN') %}
                         <a class="hidden font-medium text-gray-600 transition-colors hover:text-[#1d1d1f] sm:inline"
                            href="{{ path('app_category_index') }}">Kategorien</a>
+                        <a class="hidden font-medium text-gray-600 transition-colors hover:text-[#1d1d1f] sm:inline"
+                           href="{{ path('app_admin_dashboard') }}">Admin</a>
                     {% endif %}
                     <span class="hidden md:inline font-medium text-gray-500">{{ app.user.userIdentifier }}</span>
                     <a class="font-medium text-gray-600 hover:text-[#1d1d1f] transition-colors" href="{{ path('app_logout') }}">Abmelden</a>
@@ -68,6 +70,19 @@
     </header>
 
     <div class="flex-1">
+        {% for type, messages in app.flashes(['success', 'error']) %}
+            {% for message in messages %}
+                <div class="mx-auto mt-6 max-w-3xl px-6">
+                    <div class="rounded-2xl px-5 py-3 text-sm ring-1
+                                {{ type == 'error'
+                                    ? 'bg-red-50 text-red-700 ring-red-200'
+                                    : 'bg-pinegreen/10 text-pinegreen ring-pinegreen/20' }}">
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
         {% block body %}{% endblock %}
     </div>
 

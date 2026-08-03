@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Benutzer — Admin — Rezeptoria{% endblock %}
+
+{% block body %}
+<div class="mx-auto max-w-4xl px-6 pb-16 pt-10">
+
+    <a href="{{ path('app_admin_dashboard') }}"
+       class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
+        <span aria-hidden="true">←</span> Zurück zur Administration
+    </a>
+
+    <h1 class="mt-6 text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Benutzer</h1>
+    <p class="mt-2 text-sm text-gray-500">
+        Ein deaktiviertes Konto kann sich nicht mehr anmelden und seine Rezepte sind nicht mehr öffentlich.
+    </p>
+
+    <div class="mt-8 overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="border-b border-black/5 text-xs uppercase tracking-[0.12em] text-gray-500">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 font-medium">Benutzer</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Rolle</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Rezepte</th>
+                        <th scope="col" class="px-6 py-4 font-medium">Status</th>
+                        <th scope="col" class="px-6 py-4 text-right font-medium">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-black/5">
+                {% for user in users %}
+                    <tr class="transition-colors hover:bg-[#f5f5f7]">
+                        <td class="px-6 py-4 font-medium text-[#1d1d1f]">{{ user.username }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ user.admin ? 'Admin' : 'Benutzer' }}</td>
+                        <td class="px-6 py-4 tabular-nums text-gray-500">{{ user.recipes|length }}</td>
+                        <td class="px-6 py-4">
+                            {% if user.active %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-pinegreen/10 px-3 py-1 text-xs font-medium text-pinegreen">Aktiv</span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 ring-1 ring-red-200">Deaktiviert</span>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-4 text-right">
+                            {% if user == app.user %}
+                                <span class="text-xs text-gray-400">eigenes Konto</span>
+                            {% else %}
+                                <form method="post" action="{{ path('app_admin_user_toggle', {'id': user.id}) }}" class="inline"
+                                      {% if user.active %}onsubmit="return confirm('Benutzer „{{ user.username|e('js') }}“ wirklich deaktivieren?');"{% endif %}>
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-user' ~ user.id) }}">
+                                    <button class="font-medium transition-colors {{ user.active ? 'text-red-600 hover:text-red-700' : 'text-pinegreen hover:text-pinegreen-40' }}">
+                                        {{ user.active ? 'Deaktivieren' : 'Aktivieren' }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">Keine Benutzer vorhanden.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

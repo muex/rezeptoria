@@ -12,6 +12,19 @@
 
     <article class="mt-6 rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-10">
 
+        {% if not recipe.publiclyVisible %}
+            <div class="mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-[#f5f5f7] px-5 py-4 ring-1 ring-black/5">
+                {{ include('recipe/_status_badge.html.twig') }}
+                <p class="text-sm text-gray-500">
+                    {% if recipe.blockedByAdmin %}
+                        Dieses Rezept wurde von einem Administrator gesperrt und kann nur von diesem wieder freigegeben werden.
+                    {% else %}
+                        Dieses Rezept ist derzeit nicht öffentlich.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+
         {% if recipe.categories|length > 0 %}
             <div class="mb-4 flex flex-wrap gap-2">
                 {% for category in recipe.categories %}
@@ -89,6 +102,14 @@
         {% if app.user == recipe.owner %}
             <div class="mt-10 flex flex-wrap items-center gap-3 border-t border-black/5 pt-6">
                 <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-outline">Bearbeiten</a>
+                {% if is_granted('RECIPE_TOGGLE_ACTIVE', recipe) %}
+                    <form method="post" action="{{ path('app_recipe_toggle_active', {'id': recipe.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle-active' ~ recipe.id) }}">
+                        <button class="btn btn-outline">
+                            {{ recipe.active ? 'Deaktivieren' : 'Aktivieren' }}
+                        </button>
+                    </form>
+                {% endif %}
                 {{ include('recipe/_delete_form.html.twig') }}
             </div>
         {% endif %}
