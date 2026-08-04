@@ -1,4 +1,4 @@
-{{ form_start(form, {'action': path('app_recipe_comment_new', {'id': recipe.id}), 'attr': {'id': 'comment-form', 'class': 'space-y-4'} }) }}
+{{ form_start(form, {'action': path('app_recipe_comment_new', {'slug': recipe.slug}), 'attr': {'id': 'comment-form', 'class': 'space-y-4'} }) }}
     {{ form_errors(form) }}
 
     <div>

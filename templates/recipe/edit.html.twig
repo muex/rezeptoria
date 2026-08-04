@@ -5,7 +5,7 @@
 {% block body %}
 <div class="mx-auto max-w-3xl px-6 pb-16 pt-10">
 
-    <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
+    <a href="{{ path('app_recipe_show', {'slug': recipe.slug}) }}"
        class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-pinegreen">
         <span aria-hidden="true">←</span> Zurück zum Rezept
     </a>

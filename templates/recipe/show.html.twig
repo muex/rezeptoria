@@ -101,9 +101,9 @@
 
         {% if app.user == recipe.owner %}
             <div class="mt-10 flex flex-wrap items-center gap-3 border-t border-black/5 pt-6">
-                <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-outline">Bearbeiten</a>
+                <a href="{{ path('app_recipe_edit', {'slug': recipe.slug}) }}" class="btn btn-outline">Bearbeiten</a>
                 {% if is_granted('RECIPE_TOGGLE_ACTIVE', recipe) %}
-                    <form method="post" action="{{ path('app_recipe_toggle_active', {'id': recipe.id}) }}">
+                    <form method="post" action="{{ path('app_recipe_toggle_active', {'slug': recipe.slug}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('toggle-active' ~ recipe.id) }}">
                         <button class="btn btn-outline">
                             {{ recipe.active ? 'Deaktivieren' : 'Aktivieren' }}

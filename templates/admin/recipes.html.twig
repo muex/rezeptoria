@@ -30,7 +30,7 @@
                 {% for recipe in recipes %}
                     <tr class="transition-colors hover:bg-[#f5f5f7]">
                         <td class="px-6 py-4 font-medium text-[#1d1d1f]">
-                            <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="transition-colors hover:text-pinegreen">
+                            <a href="{{ path('app_recipe_show', {'slug': recipe.slug}) }}" class="transition-colors hover:text-pinegreen">
                                 {{ recipe.title }}
                             </a>
                         </td>
