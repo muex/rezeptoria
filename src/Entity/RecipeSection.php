@@ -17,7 +17,7 @@ class RecipeSection
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'sections')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Recipe $recipe = null;
 
     #[ORM\Column(length: 255)]

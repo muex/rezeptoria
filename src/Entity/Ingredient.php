@@ -14,7 +14,7 @@ class Ingredient
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'ingredients')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?RecipeSection $section = null;
 
     #[ORM\Column(length: 255)]
