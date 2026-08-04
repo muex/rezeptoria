@@ -9,7 +9,9 @@ use App\Form\CommentType;
 use App\Form\RecipeType;
 use App\Repository\RecipeRepository;
 use App\Security\Voter\RecipeVoter;
+use App\Service\RecipeSlugGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +36,7 @@ final class RecipeController extends AbstractController
 
     #[Route('/recipe/new', name: 'app_recipe_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, RecipeSlugGenerator $slugGenerator): Response
     {
         $recipe = new Recipe();
 
@@ -63,6 +65,8 @@ final class RecipeController extends AbstractController
                 }
             }
 
+            $recipe->setSlug($slugGenerator->generate($recipe));
+
             $entityManager->persist($recipe);
             $entityManager->flush();
 
@@ -75,9 +79,9 @@ final class RecipeController extends AbstractController
         ]);
     }
 
-    #[Route('/recipe/{id}', name: 'app_recipe_show', methods: ['GET'])]
+    #[Route('/{slug}', name: 'app_recipe_show', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET'])]
     #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
-    public function show(Recipe $recipe, Request $request, EntityManagerInterface $entityManager): Response
+    public function show(#[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, Request $request, EntityManagerInterface $entityManager): Response
     {
 
         return $this->render('recipe/show.html.twig', [
@@ -89,9 +93,9 @@ final class RecipeController extends AbstractController
      * Owner switch between published and hidden. Admin-blocked recipes are
      * refused by the voter, so the owner cannot undo a block.
      */
-    #[Route('/recipe/{id}/toggle-active', name: 'app_recipe_toggle_active', methods: ['POST'])]
+    #[Route('/{slug}/toggle-active', name: 'app_recipe_toggle_active', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['POST'])]
     #[IsGranted(RecipeVoter::TOGGLE_ACTIVE, subject: 'recipe')]
-    public function toggleActive(Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
+    public function toggleActive(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('toggle-active'.$recipe->getId(), $request->getPayload()->getString('_token'))) {
             $recipe->setActive(!$recipe->isActive());
@@ -102,12 +106,12 @@ final class RecipeController extends AbstractController
                 : 'Rezept ist jetzt deaktiviert und nur noch für dich sichtbar.');
         }
 
-        return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_recipe_show', ['slug' => $recipe->getSlug()], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/recipe/{id}/edit', name: 'app_recipe_edit', methods: ['GET', 'POST'])]
+    #[Route('/{slug}/edit', name: 'app_recipe_edit', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET', 'POST'])]
     #[IsGranted(RecipeVoter::EDIT, subject: 'recipe')]
-    public function edit(Request $request, Recipe $recipe, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $form = $this->createForm(RecipeType::class, $recipe);
         $form->handleRequest($request);
@@ -142,9 +146,9 @@ final class RecipeController extends AbstractController
         ]);
     }
 
-    #[Route('/recipe/{id}', name: 'app_recipe_delete', methods: ['POST'])]
+    #[Route('/{slug}', name: 'app_recipe_delete', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['POST'])]
     #[IsGranted(RecipeVoter::DELETE, subject: 'recipe')]
-    public function delete(Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$recipe->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($recipe);
@@ -154,10 +158,10 @@ final class RecipeController extends AbstractController
         return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/recipe/{id}/comment/new', name: 'app_recipe_comment_new', methods: ['GET', 'POST'])]
+    #[Route('/{slug}/comment/new', name: 'app_recipe_comment_new', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
-    public function newComment(#[CurrentUser] User $user, Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
+    public function newComment(#[CurrentUser] User $user, Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager): Response
     {
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
@@ -172,7 +176,7 @@ final class RecipeController extends AbstractController
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()]);
+        return $this->redirectToRoute('app_recipe_show', ['slug' => $recipe->getSlug()]);
     }
 
     public function commentForm(Recipe $recipe): Response

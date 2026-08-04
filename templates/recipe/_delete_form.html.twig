@@ -1,4 +1,4 @@
-<form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}"
+<form method="post" action="{{ path('app_recipe_delete', {'slug': recipe.slug}) }}"
       onsubmit="return confirm('Dieses Rezept wirklich löschen?');">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
     <button class="btn btn-danger">Löschen</button>

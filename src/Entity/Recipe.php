@@ -19,6 +19,10 @@ class Recipe
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
+    /** URL identifier, derived from the title when the recipe is created and kept stable afterwards. */
+    #[ORM\Column(length: 255, unique: true)]
+    private ?string $slug = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $text = null;
 
@@ -81,6 +85,18 @@ class Recipe
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }

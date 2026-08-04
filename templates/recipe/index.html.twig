@@ -49,7 +49,7 @@
                 <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 {{ ads_enabled ? 'xl:grid-cols-3' : 'lg:grid-cols-3' }}">
                     {% for recipe in recipes %}
                         <article class="card-lift group flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 {{ recipe.publiclyVisible ? '' : 'opacity-75' }}">
-                            <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="relative block aspect-[4/3] overflow-hidden">
+                            <a href="{{ path('app_recipe_show', {'slug': recipe.slug}) }}" class="relative block aspect-[4/3] overflow-hidden">
                                 {% if recipe.teaserImage %}
                                     <img src="{{ asset('uploads/images/' ~ recipe.teaserImage) }}" alt="{{ recipe.title }}"
                                          class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
@@ -70,7 +70,7 @@
                                 {% if not recipe.publiclyVisible %}
                                     <div class="mb-3">{{ include('recipe/_status_badge.html.twig') }}</div>
                                 {% endif %}
-                                <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
+                                <a href="{{ path('app_recipe_show', {'slug': recipe.slug}) }}"
                                    class="text-lg font-semibold tracking-tight text-[#1d1d1f] transition-colors group-hover:text-pinegreen">
                                     {{ recipe.title }}
                                 </a>
@@ -85,7 +85,7 @@
                                         {{ recipe.commentCount }} Kommentare
                                     </span>
                                     {% if app.user == recipe.owner %}
-                                        <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}"
+                                        <a href="{{ path('app_recipe_edit', {'slug': recipe.slug}) }}"
                                            class="inline-flex items-center gap-1 font-medium text-gray-500 hover:text-pinegreen transition-colors">
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
