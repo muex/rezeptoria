@@ -145,7 +145,12 @@
 
         {% if is_granted('IS_AUTHENTICATED_FULLY') %}
             <div class="mt-8 border-t border-black/5 pt-6">
-                {{ render(controller('App\\Controller\\RecipeController::commentForm', {'recipe': recipe.id})) }}
+                {# A refused submission passes its form in, so the text and the errors survive. #}
+                {% if commentForm is defined %}
+                    {{ include('recipe/_comment_form.html.twig', { form: commentForm, recipe: recipe }) }}
+                {% else %}
+                    {{ render(controller('App\\Controller\\RecipeController::commentForm', {'recipe': recipe.id})) }}
+                {% endif %}
             </div>
         {% else %}
             <p class="mt-6 border-t border-black/5 pt-6 text-sm text-gray-500">

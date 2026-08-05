@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecipeSectionRepository::class)]
 class RecipeSection
@@ -21,6 +22,8 @@ class RecipeSection
     private ?Recipe $recipe = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Bitte gib dem Abschnitt einen Titel.')]
+    #[Assert\Length(max: 255, maxMessage: 'Der Titel darf höchstens {{ limit }} Zeichen lang sein.')]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]

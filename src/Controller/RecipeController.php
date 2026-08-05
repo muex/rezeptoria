@@ -9,17 +9,18 @@ use App\Form\CommentType;
 use App\Form\RecipeType;
 use App\Repository\RecipeRepository;
 use App\Security\Voter\RecipeVoter;
+use App\Service\RecipeImageStorage;
 use App\Service\RecipeSlugGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/')]
 final class RecipeController extends AbstractController
@@ -36,7 +37,7 @@ final class RecipeController extends AbstractController
 
     #[Route('/recipe/new', name: 'app_recipe_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger, RecipeSlugGenerator $slugGenerator): Response
+    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage, RecipeSlugGenerator $slugGenerator): Response
     {
         $recipe = new Recipe();
 
@@ -47,20 +48,12 @@ final class RecipeController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $teaserImageFile = $form->get('teaserImage')->getData();
-            if ($teaserImageFile) {
-                $originalFilename = pathinfo($teaserImageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$teaserImageFile->guessExtension();
-
+            if ($teaserImageFile instanceof UploadedFile) {
                 try {
-                    $teaserImageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
-
-                    $recipe->setTeaserImage($newFilename);
+                    $recipe->setTeaserImage($imageStorage->store($teaserImageFile));
                 } catch (FileException) {
-                    // Keep the previous image rather than pointing at a file that was never written.
+                    // Save the recipe without an image rather than pointing at a
+                    // file that was never written.
                     $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
                 }
             }
@@ -111,25 +104,20 @@ final class RecipeController extends AbstractController
 
     #[Route('/{slug}/edit', name: 'app_recipe_edit', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET', 'POST'])]
     #[IsGranted(RecipeVoter::EDIT, subject: 'recipe')]
-    public function edit(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    public function edit(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage): Response
     {
         $form = $this->createForm(RecipeType::class, $recipe);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $teaserImageFile = $form->get('teaserImage')->getData();
-            if ($teaserImageFile) {
-                $originalFilename = pathinfo($teaserImageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$teaserImageFile->guessExtension();
+            if ($teaserImageFile instanceof UploadedFile) {
+                $replacedImage = $recipe->getTeaserImage();
 
                 try {
-                    $teaserImageFile->move(
-                        $this->getParameter('images_directory'),
-                        $newFilename
-                    );
-
-                    $recipe->setTeaserImage($newFilename);
+                    $recipe->setTeaserImage($imageStorage->store($teaserImageFile));
+                    // Only once the replacement is safely on disk.
+                    $imageStorage->remove($replacedImage);
                 } catch (FileException) {
                     // Keep the previous image rather than pointing at a file that was never written.
                     $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
@@ -148,17 +136,23 @@ final class RecipeController extends AbstractController
 
     #[Route('/{slug}', name: 'app_recipe_delete', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['POST'])]
     #[IsGranted(RecipeVoter::DELETE, subject: 'recipe')]
-    public function delete(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage): Response
     {
         if ($this->isCsrfTokenValid('delete'.$recipe->getId(), $request->getPayload()->getString('_token'))) {
+            $teaserImage = $recipe->getTeaserImage();
+
             $entityManager->remove($recipe);
             $entityManager->flush();
+
+            // After the row is gone, so a failed delete cannot leave a recipe
+            // pointing at a missing file.
+            $imageStorage->remove($teaserImage);
         }
 
         return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/{slug}/comment/new', name: 'app_recipe_comment_new', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET', 'POST'])]
+    #[Route('/{slug}/comment/new', name: 'app_recipe_comment_new', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
     public function newComment(#[CurrentUser] User $user, Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager): Response
@@ -167,14 +161,21 @@ final class RecipeController extends AbstractController
         $form = $this->createForm(CommentType::class, $comment);
 
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
 
-            $recipe->addComment($comment);
-            $user->addComment($comment);
-            $comment->setCreatedAt(new \DateTimeImmutable());
-            $entityManager->persist($comment);
-            $entityManager->flush();
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            // Show the recipe again with this form instead of the empty one, so
+            // the comment and the reason it was refused stay on screen.
+            return $this->render('recipe/show.html.twig', [
+                'recipe' => $recipe,
+                'commentForm' => $form,
+            ], new Response(status: Response::HTTP_UNPROCESSABLE_ENTITY));
         }
+
+        $recipe->addComment($comment);
+        $user->addComment($comment);
+        $comment->setCreatedAt(new \DateTimeImmutable());
+        $entityManager->persist($comment);
+        $entityManager->flush();
 
         return $this->redirectToRoute('app_recipe_show', ['slug' => $recipe->getSlug()]);
     }

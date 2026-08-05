@@ -4,10 +4,14 @@
     {{ form_row(form.title) }}
     {{ form_row(form.text) }}
 
-    <div class="flex flex-wrap items-center gap-3">
-        <label class="text-sm font-medium text-gray-700" for="{{ form.baseServings.vars.id }}">Grundmenge für</label>
-        {{ form_widget(form.baseServings, {attr: {class: 'w-20', min: 1}}) }}
-        <span class="text-sm text-gray-500">Portionen</span>
+    <div>
+        <div class="flex flex-wrap items-center gap-3">
+            <label class="text-sm font-medium text-gray-700" for="{{ form.baseServings.vars.id }}">Grundmenge für</label>
+            {{ form_widget(form.baseServings, {attr: {class: 'w-20', min: 1}}) }}
+            <span class="text-sm text-gray-500">Portionen</span>
+        </div>
+        {# form_widget alone swallows violations — these fields are rendered by hand. #}
+        {{ form_errors(form.baseServings) }}
     </div>
 
     {# ── Sections (manually rendered so we control the HTML structure) ── #}
@@ -46,6 +50,11 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                                         </svg>
                                     </button>
+                                    <div class="w-full">
+                                        {{ form_errors(ingredient.amount) }}
+                                        {{ form_errors(ingredient.unit) }}
+                                        {{ form_errors(ingredient.name) }}
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>

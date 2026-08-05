@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RecipeRepository::class)]
 class Recipe
@@ -17,9 +18,14 @@ class Recipe
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Bitte gib dem Rezept einen Titel.')]
+    #[Assert\Length(max: 255, maxMessage: 'Der Titel darf höchstens {{ limit }} Zeichen lang sein.')]
     private ?string $title = null;
 
-    /** URL identifier, derived from the title when the recipe is created and kept stable afterwards. */
+    /**
+     * URL identifier, derived from the title when the recipe is created and kept stable afterwards.
+     * Set by RecipeSlugGenerator after validation, so it carries no constraint of its own.
+     */
     #[ORM\Column(length: 255, unique: true)]
     private ?string $slug = null;
 
@@ -49,6 +55,7 @@ class Recipe
     private Collection $comments;
 
     #[ORM\Column(options: ['default' => 4])]
+    #[Assert\Range(min: 1, max: 100, notInRangeMessage: 'Bitte gib eine Portionszahl zwischen {{ min }} und {{ max }} an.')]
     private int $baseServings = 4;
 
     /**

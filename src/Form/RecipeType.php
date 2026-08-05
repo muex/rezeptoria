@@ -10,15 +10,19 @@ use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class RecipeType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('title')
+            // empty_data keeps an empty field from reaching setTitle(string) as
+            // null, which would fail with a 500 before validation could report it.
+            ->add('title', TextType::class, ['empty_data' => ''])
             ->add('text', TextareaType::class, [
                 'label' => 'Einleitung / Beschreibung',
                 'required' => false,
@@ -40,6 +44,26 @@ class RecipeType extends AbstractType
                 'label' => 'Titelbild',
                 'required' => false,
                 'mapped' => false,
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
+                // Uploads land in public/uploads/images and are served from our
+                // own origin, so anything but a real raster image is a liability
+                // — an SVG carrying a <script> would run as first-party code.
+                'constraints' => [
+                    new File(
+                        maxSize: '5M',
+                        // Checks the extension *and* that the content matches it,
+                        // so an SVG renamed to .png is rejected as well.
+                        extensions: ['jpg', 'jpeg', 'png', 'webp'],
+                        notFoundMessage: 'Das Bild konnte nicht gelesen werden.',
+                        maxSizeMessage: 'Das Bild ist zu groß ({{ size }} {{ suffix }}). Erlaubt sind maximal {{ limit }} {{ suffix }}.',
+                        mimeTypesMessage: 'Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.',
+                        extensionsMessage: 'Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.',
+                        // No size placeholder here: PHP reports this limit in raw bytes.
+                        uploadIniSizeErrorMessage: 'Das Bild überschreitet das Upload-Limit des Servers.',
+                        uploadFormSizeErrorMessage: 'Das Bild ist zu groß.',
+                        uploadErrorMessage: 'Das Bild konnte nicht hochgeladen werden.',
+                    ),
+                ],
             ])
             ->add('categories', EntityType::class, [
                 'class' => Category::class,

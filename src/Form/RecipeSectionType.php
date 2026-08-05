@@ -18,6 +18,9 @@ class RecipeSectionType extends AbstractType
             ->add('title', TextType::class, [
                 'label' => 'Titel',
                 'attr' => ['placeholder' => 'z.B. Kuchenboden, Teig, Sauce …'],
+                // See RecipeType: an empty field must reach the validator as '',
+                // not as null.
+                'empty_data' => '',
             ])
             ->add('ingredients', CollectionType::class, [
                 'entry_type' => IngredientType::class,
