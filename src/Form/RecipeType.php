@@ -50,7 +50,8 @@ class RecipeType extends AbstractType
                 // — an SVG carrying a <script> would run as first-party code.
                 'constraints' => [
                     new File(
-                        maxSize: '5M',
+                        // Matches PHP's upload_max_filesize; raise both together.
+                        maxSize: '2M',
                         // Checks the extension *and* that the content matches it,
                         // so an SVG renamed to .png is rejected as well.
                         extensions: ['jpg', 'jpeg', 'png', 'webp'],
