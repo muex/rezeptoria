@@ -209,11 +209,6 @@ class Recipe
         return $this;
     }
 
-    public function getCommentCount(): int
-    {
-        return $this->comments->count();
-    }
-
     public function getBaseServings(): int
     {
         return $this->baseServings;

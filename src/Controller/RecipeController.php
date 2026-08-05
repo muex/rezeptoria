@@ -29,9 +29,11 @@ final class RecipeController extends AbstractController
     public function index(RecipeRepository $recipeRepository): Response
     {
         $viewer = $this->getUser();
+        $recipes = $recipeRepository->findVisibleFor($viewer instanceof User ? $viewer : null);
 
         return $this->render('recipe/index.html.twig', [
-            'recipes' => $recipeRepository->findVisibleFor($viewer instanceof User ? $viewer : null),
+            'recipes' => $recipes,
+            'comment_counts' => $recipeRepository->countCommentsFor($recipes),
         ]);
     }
 
@@ -70,6 +72,17 @@ final class RecipeController extends AbstractController
             'recipe' => $recipe,
             'form' => $form,
         ]);
+    }
+
+    /**
+     * Recipes lived at /recipe/{id} until the slugs arrived. Keeps links and
+     * bookmarks from that time alive.
+     */
+    #[Route('/recipe/{id}', name: 'app_recipe_show_legacy', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
+    public function showLegacy(Recipe $recipe): Response
+    {
+        return $this->redirectToRoute('app_recipe_show', ['slug' => $recipe->getSlug()], Response::HTTP_MOVED_PERMANENTLY);
     }
 
     #[Route('/{slug}', name: 'app_recipe_show', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET'])]

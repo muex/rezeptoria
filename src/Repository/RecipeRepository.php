@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Comment;
 use App\Entity\Recipe;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -28,6 +29,10 @@ class RecipeRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('r')
             ->innerJoin('r.owner', 'o')
             ->addSelect('o')
+            // The listing prints the categories of every recipe; without this
+            // join each card would fetch its own.
+            ->leftJoin('r.categories', 'c')
+            ->addSelect('c')
             ->orderBy('r.id', 'ASC');
 
         $public = 'r.active = true AND r.blockedByAdmin = false AND o.active = true';
@@ -43,6 +48,39 @@ class RecipeRepository extends ServiceEntityRepository
         $recipes = $qb->getQuery()->getResult();
 
         return $recipes;
+    }
+
+    /**
+     * Comment counts for a batch of recipes, keyed by recipe id. Counting via
+     * the association would load every comment of every recipe just to size the
+     * collection; this is one query for the whole page.
+     *
+     * @param Recipe[] $recipes
+     *
+     * @return array<int, int>
+     */
+    public function countCommentsFor(array $recipes): array
+    {
+        if ([] === $recipes) {
+            return [];
+        }
+
+        /** @var list<array{recipeId: int|string, commentCount: int|string}> $rows */
+        $rows = $this->getEntityManager()->createQueryBuilder()
+            ->select('IDENTITY(c.recipe) AS recipeId', 'COUNT(c.id) AS commentCount')
+            ->from(Comment::class, 'c')
+            ->andWhere('c.recipe IN (:recipes)')
+            ->setParameter('recipes', $recipes)
+            ->groupBy('c.recipe')
+            ->getQuery()
+            ->getResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['recipeId']] = (int) $row['commentCount'];
+        }
+
+        return $counts;
     }
 
     /**
