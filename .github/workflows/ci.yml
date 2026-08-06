@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor composer.json declares, and the version development runs on.
+        php: ['8.4', '8.5']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          # gd builds the image fixtures, pdo_sqlite carries the test database.
+          extensions: intl, gd, pdo_sqlite, mbstring
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
+
+      # assets/vendor is not committed, and templates fail to render without it.
+      # composer's auto-scripts run importmap:install, which fetches it.
+      - name: Cache importmap assets
+        uses: actions/cache@v4
+        with:
+          path: assets/vendor
+          key: importmap-${{ hashFiles('importmap.php') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Lint templates
+        run: php bin/console lint:twig templates
+
+      - name: Lint container
+        run: php bin/console lint:container
+
+      - name: Static analysis
+        run: composer phpstan
+
+      # No database service: the suite runs on SQLite, see .env.test.
+      - name: Tests
+        run: composer test
