@@ -19,13 +19,13 @@ final class RecipeSlugGenerator
      *
      * @var list<string>
      */
-    public const array RESERVED = ['admin', 'category', 'login', 'logout', 'recipe', 'register'];
+    public const array RESERVED = ['admin', 'category', 'login', 'logout', 'recipe', 'register', 'reset-password'];
 
     /**
      * Route requirement for the {slug} parameter: lower-case, no leading
      * underscore (that would shadow /_profiler & co.) and none of RESERVED.
      */
-    public const string SLUG_PATTERN = '(?!(?:admin|category|login|logout|recipe|register)(?![a-z0-9-]))[a-z0-9][a-z0-9-]*';
+    public const string SLUG_PATTERN = '(?!(?:admin|category|login|logout|recipe|register|reset-password)(?![a-z0-9-]))[a-z0-9][a-z0-9-]*';
 
     /** Leaves room in the 255 char column for the "-2", "-3", … suffix. */
     private const int MAX_BASE_LENGTH = 240;

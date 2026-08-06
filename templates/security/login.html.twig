@@ -50,13 +50,11 @@
 
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                <!--<div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" class="form-check"/>
-                        <span class="text-sm text-gray-600">Angemeldet bleiben</span>
-                    </label>
-                    <a href="#" class="text-sm font-medium text-pinegreen hover:text-pinegreen-40">Passwort vergessen?</a>
-                </div> -->
+                {# "Angemeldet bleiben" stays out until remember_me is configured on the firewall. #}
+                <div class="flex justify-end">
+                    <a href="{{ path('app_forgot_password_request') }}"
+                       class="text-sm font-medium text-pinegreen hover:text-pinegreen-40">Passwort vergessen?</a>
+                </div>
 
                 <button type="submit" class="btn btn-primary w-full">
                     Anmelden

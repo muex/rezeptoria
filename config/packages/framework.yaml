@@ -2,6 +2,12 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    # The interface is German throughout. symfony/translation is not installed,
+    # so this mainly settles locale-dependent behaviour (the slugger's
+    # transliteration, for one) — user-facing texts are written out in German
+    # where they appear.
+    default_locale: de
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}E-Mail unterwegs — Rezeptoria{% endblock %}
+
+{% block body %}
+    <div class="mx-auto flex max-w-md flex-col px-6 pb-16 pt-16">
+        <div class="rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-8">
+            <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Schau in dein Postfach</h1>
+
+            {# Deliberately vague: confirming which addresses have an account
+               would turn this page into a way to enumerate users. #}
+            <p class="mt-4 text-sm leading-relaxed text-gray-600">
+                Falls es zu dieser Adresse ein Konto gibt, ist gerade eine E-Mail mit einem Link zum Zurücksetzen
+                unterwegs. Der Link gilt bis {{ resetToken.expiresAt|date('H:i') }} Uhr.
+            </p>
+
+            <p class="mt-4 text-sm text-gray-500">
+                Nichts angekommen? Sieh im Spam-Ordner nach oder
+                <a href="{{ path('app_forgot_password_request') }}" class="font-medium text-pinegreen hover:text-pinegreen-40">fordere den Link erneut an</a>.
+            </p>
+        </div>
+    </div>
+{% endblock %}

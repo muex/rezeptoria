@@ -15,6 +15,12 @@
                 {{ form_errors(registrationForm.username) }}
             </div>
             <div>
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                {{ form_help(registrationForm.email) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+            <div>
                 {{ form_label(registrationForm.plainPassword, 'Passwort') }}
                 {{ form_widget(registrationForm.plainPassword) }}
                 {{ form_errors(registrationForm.plainPassword) }}

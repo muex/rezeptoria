@@ -10,10 +10,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
+#[UniqueEntity(fields: ['email'], message: 'Zu dieser E-Mail-Adresse gibt es bereits ein Konto.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
     #[ORM\Id]
@@ -23,6 +25,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
 
     #[ORM\Column(length: 180)]
     private ?string $username = null;
+
+    /**
+     * Required for new accounts and the only way to reset a password. Nullable
+     * because accounts created before the field existed have none — those keep
+     * working, they just cannot use the reset flow.
+     */
+    #[ORM\Column(length: 180, unique: true, nullable: true)]
+    #[Assert\Email(message: 'Bitte gib eine gültige E-Mail-Adresse an.')]
+    #[Assert\Length(max: 180)]
+    private ?string $email = null;
 
     /**
      * @var list<string> The user roles
@@ -66,6 +78,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     public function getUsername(): ?string
     {
         return $this->username;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
     }
 
     public function setUsername(string $username): static

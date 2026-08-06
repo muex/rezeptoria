@@ -1,0 +1,12 @@
+{% set reset_url = url('app_reset_password', {token: resetToken.token}) %}
+<p>Hallo!</p>
+
+<p>Für dein Konto bei Rezeptoria wurde ein neues Passwort angefordert. Über diesen Link kannst du eines setzen:</p>
+
+<p><a href="{{ reset_url }}">{{ reset_url }}</a></p>
+
+<p>Der Link gilt bis {{ resetToken.expiresAt|date('d.m.Y H:i') }} Uhr.</p>
+
+<p>Warst du das nicht, kannst du diese E-Mail einfach ignorieren — dein Passwort bleibt dann unverändert.</p>
+
+<p>Viele Grüße<br>Rezeptoria</p>

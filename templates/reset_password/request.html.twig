@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Passwort zurücksetzen — Rezeptoria{% endblock %}
+
+{% block body %}
+    <div class="mx-auto flex max-w-md flex-col px-6 pb-16 pt-16">
+        <div class="rounded-3xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] ring-1 ring-black/5 sm:p-8">
+            <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f]">Passwort zurücksetzen</h1>
+            <p class="mt-2 text-sm text-gray-500">
+                Gib die E-Mail-Adresse deines Kontos ein. Wir schicken dir einen Link, mit dem du ein neues Passwort setzen kannst.
+            </p>
+
+            {% for flash_error in app.flashes('reset_password_error') %}
+                <p class="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100">{{ flash_error }}</p>
+            {% endfor %}
+
+            {{ form_start(requestForm, {'attr': {'class': 'mt-8 space-y-5'}}) }}
+                {{ form_row(requestForm.email) }}
+                <button class="btn btn-primary w-full">Link anfordern</button>
+            {{ form_end(requestForm) }}
+
+            <p class="mt-6 text-center text-sm text-gray-500">
+                Doch wieder eingefallen?
+                <a href="{{ path('app_login') }}" class="font-medium text-pinegreen hover:text-pinegreen-40">Zur Anmeldung</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}
