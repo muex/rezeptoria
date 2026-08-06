@@ -1,6 +1,21 @@
 # rezeptoria
 ## recipe database
 
+## Tests
+
+```bash
+composer test          # the whole suite
+php bin/phpunit tests/Unit
+```
+
+The suite runs against SQLite (`var/test.db`, configured in `.env.test`), so it
+needs neither a database server nor any credentials. Each test rebuilds the
+schema from the mapping, which means the MySQL migrations are *not* exercised
+here — run `doctrine:migrations:migrate` against a real database to check those.
+
+Form CSRF protection is switched off in the test environment: the stateless
+token is completed by JavaScript in the browser, which BrowserKit does not run.
+
 ## Advertisement slots
 
 Ads are rendered through a single reusable partial:

@@ -24,17 +24,13 @@ class RegistrationFormType extends AbstractType
                 'attr' => ['autocomplete' => 'email'],
                 'help' => 'Wird nur gebraucht, um dein Passwort zurückzusetzen.',
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Bitte gib eine E-Mail-Adresse an.',
-                    ]),
+                    new NotBlank(message: 'Bitte gib eine E-Mail-Adresse an.'),
                 ],
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'constraints' => [
-                    new IsTrue([
-                        'message' => 'Bitte stimme den Nutzungsbedingungen zu.',
-                    ]),
+                    new IsTrue(message: 'Bitte stimme den Nutzungsbedingungen zu.'),
                 ],
             ])
             ->add('plainPassword', PasswordType::class, [
@@ -43,15 +39,13 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Bitte gib ein Passwort ein.',
-                    ]),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Dein Passwort muss mindestens {{ limit }} Zeichen lang sein.',
+                    new NotBlank(message: 'Bitte gib ein Passwort ein.'),
+                    new Length(
+                        min: 6,
+                        minMessage: 'Dein Passwort muss mindestens {{ limit }} Zeichen lang sein.',
                         // max length allowed by Symfony for security reasons
-                        'max' => 4096,
-                    ]),
+                        max: 4096,
+                    ),
                 ],
             ])
         ;

@@ -9,3 +9,10 @@ framework:
             - submit
             - authenticate
             - logout
+
+when@test:
+    framework:
+        form:
+            # The stateless token is completed by JavaScript in the browser,
+            # which BrowserKit does not run. Tests drive the forms directly.
+            csrf_protection: false
