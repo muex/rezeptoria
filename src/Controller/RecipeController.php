@@ -87,9 +87,8 @@ final class RecipeController extends AbstractController
 
     #[Route('/{slug}', name: 'app_recipe_show', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET'])]
     #[IsGranted(RecipeVoter::VIEW, subject: 'recipe')]
-    public function show(#[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, Request $request, EntityManagerInterface $entityManager): Response
+    public function show(#[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe): Response
     {
-
         return $this->render('recipe/show.html.twig', [
             'recipe' => $recipe
         ]);

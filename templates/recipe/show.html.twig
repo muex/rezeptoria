@@ -2,6 +2,10 @@
 
 {% block title %}{{ recipe.title }} — Rezeptoria{% endblock %}
 
+{% block og_type %}article{% endblock %}
+{% block meta_description %}{{ (recipe.text ?: 'Das Rezept für ' ~ recipe.title)|striptags|slice(0, 155) }}{% endblock %}
+{% block og_image %}{% if recipe.teaserImage %}{{ absolute_url(asset('uploads/images/' ~ recipe.teaserImage)) }}{% endif %}{% endblock %}
+
 {% block body %}
 <div class="mx-auto max-w-3xl px-6 pb-16 pt-10">
 

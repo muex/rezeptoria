@@ -4,6 +4,28 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <title>{% block title %}Rezeptoria{% endblock %}</title>
+
+        {# Pages override meta_description and og_image; everything else follows.
+           A block renders with escaping already applied, so these go out raw —
+           escaping them again would turn "&amp;" into "&amp;amp;". #}
+        {% set meta_description = block('meta_description') is defined ? block('meta_description')|striptags|trim : 'Rezepte sammeln, teilen und nachkochen — schön serviert auf Rezeptoria.'|e %}
+        {% set og_image = block('og_image') is defined ? block('og_image')|trim : null %}
+        {% set canonical_url = app.request.uri|split('?')|first %}
+        <meta name="description" content="{{ meta_description|raw }}">
+        <link rel="canonical" href="{{ canonical_url }}">
+
+        <meta property="og:site_name" content="Rezeptoria">
+        <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+        <meta property="og:title" content="{{ block('title')|striptags|trim|raw }}">
+        <meta property="og:description" content="{{ meta_description|raw }}">
+        <meta property="og:url" content="{{ canonical_url }}">
+        {% if og_image %}
+            <meta property="og:image" content="{{ og_image|raw }}">
+            <meta name="twitter:card" content="summary_large_image">
+        {% else %}
+            <meta name="twitter:card" content="summary">
+        {% endif %}
+
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.1em%22 font-size=%22104%22>🍳</text></svg>">
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
@@ -14,6 +36,8 @@
             {{ encore_entry_script_tags('app') }}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
+        {# Production only — local browsing and test runs would otherwise land in the live statistics. #}
+        {% if app.environment == 'prod' %}
         <!-- Matomo -->
         <script>
             var _paq = window._paq = window._paq || [];
@@ -30,6 +54,7 @@
             })();
         </script>
         <!-- End Matomo Code -->
+        {% endif %}
 
     </head>
     <body class="min-h-screen flex flex-col bg-[#f5f5f7] text-[#1d1d1f] selection:bg-pinegreen/20">

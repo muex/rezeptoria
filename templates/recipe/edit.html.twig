@@ -14,6 +14,17 @@
         <h1 class="text-2xl font-semibold tracking-tight text-[#1d1d1f] sm:text-3xl">Rezept bearbeiten</h1>
         <p class="mt-2 text-sm text-gray-500">{{ recipe.title }}</p>
 
+        {# The slug is fixed once the recipe exists, so a new title does not move
+           the page — worth saying, since the address is otherwise invisible here. #}
+        <p class="mt-1 text-sm text-gray-400">
+            Adresse:
+            <a href="{{ path('app_recipe_show', {'slug': recipe.slug}) }}"
+               class="font-medium text-gray-500 underline decoration-gray-300 underline-offset-2 transition-colors hover:text-pinegreen">
+                /{{ recipe.slug }}
+            </a>
+            — bleibt auch dann bestehen, wenn du den Titel änderst.
+        </p>
+
         <div class="mt-8">
             {{ include('recipe/_form.html.twig', {'button_label': 'Änderungen speichern'}) }}
         </div>
