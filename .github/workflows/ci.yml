@@ -56,3 +56,41 @@ jobs:
       # No database service: the suite runs on SQLite, see .env.test.
       - name: Tests
         run: composer test
+
+  deploy:
+    name: Deploy
+    # Nothing reaches production that the suite has not passed first.
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    # Two deploys at once would fight over the release symlink.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo, curl, zip, redis
+
+      - name: Install Deployer
+        run: composer global require deployer/deployer
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOYER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.DEPLOYER_HOST }} >> ~/.ssh/known_hosts
+
+      # deploy.php migrates the database before switching the symlink.
+      - name: Run Deployer
+        env:
+          DEPLOYER_HOST: ${{ secrets.DEPLOYER_HOST }}
+          DEPLOYER_USER: ${{ secrets.DEPLOYER_USER }}
+        run: ~/.composer/vendor/bin/dep deploy -vvv
