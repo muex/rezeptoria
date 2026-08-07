@@ -2,45 +2,22 @@
 
 namespace App\Tests\Functional;
 
-use App\Tests\Support\DatabaseTestCase;
-use Symfony\Component\Filesystem\Filesystem;
+use App\Tests\Support\ImageUploadTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Uploads are served from our own origin, so what lands in the upload
- * directory has to be a real image — and nothing may stay there once no
- * recipe points at it.
+ * The teaser image: uploads are served from our own origin, so what lands in
+ * the upload directory has to be a real image — and nothing may stay there
+ * once no recipe points at it.
  */
-final class RecipeImageTest extends DatabaseTestCase
+final class RecipeImageTest extends ImageUploadTestCase
 {
-    private string $uploadDir;
-    private string $fixtureDir;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->uploadDir = static::getContainer()->getParameter('images_directory');
-        $this->fixtureDir = sys_get_temp_dir().'/rezeptoria-image-test';
-
-        $filesystem = new Filesystem();
-        $filesystem->remove([$this->uploadDir, $this->fixtureDir]);
-        $filesystem->mkdir($this->fixtureDir);
-    }
-
-    protected function tearDown(): void
-    {
-        (new Filesystem())->remove([$this->uploadDir, $this->fixtureDir]);
-
-        parent::tearDown();
-    }
-
     public function testAnSvgIsRejected(): void
     {
         $recipe = $this->ownRecipe();
 
-        $this->submitEdit($recipe->getSlug(), $this->svgFile('schaedlich.svg', 'image/svg+xml'));
+        $this->submitTeaser($recipe->getSlug(), $this->svgFile('schaedlich.svg', 'image/svg+xml'));
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         self::assertSelectorTextContains('.text-red-600', 'Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.');
@@ -54,7 +31,7 @@ final class RecipeImageTest extends DatabaseTestCase
     {
         $recipe = $this->ownRecipe();
 
-        $this->submitEdit($recipe->getSlug(), $this->svgFile('harmlos.png', 'image/png'));
+        $this->submitTeaser($recipe->getSlug(), $this->svgFile('harmlos.png', 'image/png'));
 
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         self::assertSame([], $this->storedFiles());
@@ -64,7 +41,7 @@ final class RecipeImageTest extends DatabaseTestCase
     {
         $recipe = $this->ownRecipe();
 
-        $this->submitEdit($recipe->getSlug(), $this->pngFile('kuchen.png'));
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('kuchen.png'));
 
         self::assertResponseRedirects();
         self::assertCount(1, $this->storedFiles());
@@ -78,20 +55,69 @@ final class RecipeImageTest extends DatabaseTestCase
     {
         $recipe = $this->ownRecipe();
 
-        $this->submitEdit($recipe->getSlug(), $this->pngFile('erstes.png'));
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('erstes.png'));
         $first = $this->reloadRecipe($recipe->getSlug())->getTeaserImage();
 
-        $this->submitEdit($recipe->getSlug(), $this->pngFile('zweites.png'));
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('zweites.png'));
         $second = $this->reloadRecipe($recipe->getSlug())->getTeaserImage();
 
         self::assertNotSame($first, $second);
         self::assertSame([$second], $this->storedFiles(), 'the replaced file should be gone');
     }
 
+    public function testTickingTheBoxTakesTheImageAway(): void
+    {
+        $recipe = $this->ownRecipe();
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('kuchen.png'));
+        self::assertCount(1, $this->storedFiles());
+
+        $this->submitEdit($recipe->getSlug(), ['removeTeaserImage' => '1']);
+
+        self::assertResponseRedirects();
+        self::assertNull($this->reloadRecipe($recipe->getSlug())->getTeaserImage());
+        self::assertSame([], $this->storedFiles());
+    }
+
+    /**
+     * Picking a file says more clearly what the image should be than a box
+     * left ticked from before.
+     */
+    public function testAFreshUploadWinsOverTheRemoveBox(): void
+    {
+        $recipe = $this->ownRecipe();
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('erstes.png'));
+
+        $this->submitEdit(
+            $recipe->getSlug(),
+            ['removeTeaserImage' => '1'],
+            ['teaserImage' => $this->pngFile('zweites.png')],
+        );
+
+        $stored = $this->reloadRecipe($recipe->getSlug())->getTeaserImage();
+        self::assertNotNull($stored);
+        self::assertSame([$stored], $this->storedFiles());
+    }
+
+    /**
+     * The box is only worth showing once there is something to take away.
+     */
+    public function testTheRemoveBoxOnlyAppearsWithAnImage(): void
+    {
+        $recipe = $this->ownRecipe();
+
+        $crawler = $this->client->request('GET', '/'.$recipe->getSlug().'/edit');
+        self::assertCount(0, $crawler->filter('input[name="recipe[removeTeaserImage]"]'));
+
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('kuchen.png'));
+
+        $crawler = $this->client->request('GET', '/'.$recipe->getSlug().'/edit');
+        self::assertCount(1, $crawler->filter('input[name="recipe[removeTeaserImage]"]'));
+    }
+
     public function testDeletingTheRecipeRemovesItsImage(): void
     {
         $recipe = $this->ownRecipe();
-        $this->submitEdit($recipe->getSlug(), $this->pngFile('kuchen.png'));
+        $this->submitTeaser($recipe->getSlug(), $this->pngFile('kuchen.png'));
         self::assertCount(1, $this->storedFiles());
 
         // Submitting the real form carries the real CSRF token.
@@ -102,53 +128,8 @@ final class RecipeImageTest extends DatabaseTestCase
         self::assertSame([], $this->storedFiles());
     }
 
-    private function ownRecipe(): \App\Entity\Recipe
+    private function submitTeaser(string $slug, UploadedFile $file): void
     {
-        $owner = $this->createUser();
-        $this->client->loginUser($owner);
-
-        return $this->createRecipe($owner);
-    }
-
-    private function submitEdit(string $slug, UploadedFile $file): void
-    {
-        $this->client->request('POST', '/'.$slug.'/edit', [
-            'recipe' => [
-                'title' => 'Käsekuchen',
-                'text' => 'Ein Kuchen.',
-                'baseServings' => 4,
-            ],
-        ], [
-            'recipe' => ['teaserImage' => $file],
-        ]);
-    }
-
-    private function pngFile(string $name): UploadedFile
-    {
-        $path = $this->fixtureDir.'/'.$name;
-        $image = imagecreatetruecolor(2, 2);
-        imagepng($image, $path);
-
-        return new UploadedFile($path, $name, 'image/png', test: true);
-    }
-
-    private function svgFile(string $name, string $clientMimeType): UploadedFile
-    {
-        $path = $this->fixtureDir.'/'.$name;
-        file_put_contents($path, '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
-
-        return new UploadedFile($path, $name, $clientMimeType, test: true);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function storedFiles(): array
-    {
-        if (!is_dir($this->uploadDir)) {
-            return [];
-        }
-
-        return array_values(array_diff(scandir($this->uploadDir) ?: [], ['.', '..']));
+        $this->submitEdit($slug, [], ['teaserImage' => $file]);
     }
 }

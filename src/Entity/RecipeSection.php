@@ -29,6 +29,10 @@ class RecipeSection
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $preparation = null;
 
+    /** One picture for this step, stored under public/uploads/images like the recipe's own images. */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     /**
      * @var Collection<int, Ingredient>
      */
@@ -77,6 +81,18 @@ class RecipeSection
     public function setPreparation(?string $preparation): static
     {
         $this->preparation = $preparation;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

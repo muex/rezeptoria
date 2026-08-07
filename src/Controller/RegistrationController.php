@@ -34,7 +34,10 @@ class RegistrationController extends AbstractController
 
             // do anything else you need here, like send an email
 
-            return $security->login($user, 'form_login', 'main');
+            // login() only answers when the authenticator has a response of its
+            // own to give; otherwise the new user lands on the recipe listing.
+            return $security->login($user, 'form_login', 'main')
+                ?? $this->redirectToRoute('app_recipe_index');
         }
 
         return $this->render('registration/register.html.twig', [

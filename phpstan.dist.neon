@@ -1,3 +1,23 @@
+includes:
+    # Registered by hand rather than through phpstan/extension-installer: that
+    # one is a Composer plugin and would have to be allowed to run.
+    #
+    # extension.neon only — it is what recognises the properties Doctrine
+    # writes itself, so the identifier of an entity no longer looks unwritten.
+    # The package's rules.neon on top of that demands that every property type
+    # match its column exactly, which the entities here do not do: they follow
+    # the maker-bundle style, where a property starts as null and the
+    # constraint decides whether it may stay that way. That is a refactoring to
+    # decide on separately.
+    #
+    # No `doctrine.objectManagerLoader` either. It would hand the extension the
+    # real mapping — worth having for repository and DQL analysis — but it gets
+    # there by booting the kernel inside the analysis, and from then on PHPStan
+    # reports the generated Symfony\Config\* classes that config/reference.php
+    # names in its type aliases as unknown: 47 errors that only show up on a
+    # cold cache, which is to say in CI and not on a developer machine.
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+
 parameters:
     level: 9
     paths:
