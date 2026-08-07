@@ -1,3 +1,16 @@
+includes:
+    # Registered by hand rather than through phpstan/extension-installer: that
+    # one is a Composer plugin and would have to be allowed to run.
+    #
+    # extension.neon only — it teaches PHPStan the mapping. The package's
+    # rules.neon on top of that demands that every property type match its
+    # column exactly (no `?string` behind a NOT NULL column), which is not how
+    # the entities here are written: they follow the maker-bundle style, where
+    # a property starts as null and the constraint decides whether it may stay
+    # that way. Turning it on reports 61 violations across every entity, so it
+    # is a refactoring to decide on separately, not a side effect of this.
+    - vendor/phpstan/phpstan-doctrine/extension.neon
+
 parameters:
     level: 9
     paths:
@@ -5,3 +18,8 @@ parameters:
         - config/
         - public/
         - src/
+    doctrine:
+        # Teaches the extension the mapping — among other things that Doctrine
+        # writes the identifier of a persisted entity through reflection, which
+        # PHPStan cannot see happen from the code alone.
+        objectManagerLoader: tests/object-manager.php

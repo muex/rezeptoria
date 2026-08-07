@@ -106,7 +106,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->username;
+        // The column is NOT NULL and the name is set on registration, so this
+        // can only be reached by a user that was never filled in — an empty
+        // identifier would silently stand for "anybody".
+        if (null === $this->username || '' === $this->username) {
+            throw new \LogicException('Der Benutzer hat keinen Benutzernamen.');
+        }
+
+        return $this->username;
     }
 
     /**
@@ -120,7 +127,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        // array_unique keeps the original keys, which would leave a gap where
+        // a duplicate was — array_values makes it the list this returns.
+        return array_values(array_unique($roles));
     }
 
     /**
