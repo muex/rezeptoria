@@ -10,7 +10,7 @@
         "doctrine/dbal": "^3.10.6",
         "doctrine/doctrine-bundle": "^2.19.0",
         "doctrine/doctrine-migrations-bundle": "^3.7.0",
-        "doctrine/orm": "^3.6.8",
+        "doctrine/orm": "3.6.7",
         "symfony/apache-pack": "^1.0.1",
         "symfony/asset": "7.4.*",
         "symfony/console": "7.4.*",
