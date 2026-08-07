@@ -45,8 +45,19 @@ class Recipe
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $ingredients = null;
 
+    /** The one image that stands for the recipe: title image here, thumbnail in the listing, preview in shared links. */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $teaserImage = null;
+
+    /**
+     * Gallery images, kept in the order the form submitted them.
+     *
+     * @var Collection<int, RecipeImage>
+     */
+    #[ORM\OneToMany(targetEntity: RecipeImage::class, mappedBy: 'recipe', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[Assert\Count(max: 12, maxMessage: 'Mehr als {{ limit }} Galeriebilder sind pro Rezept nicht möglich.')]
+    private Collection $images;
 
     /**
      * @var Collection<int, Comment>
@@ -77,6 +88,7 @@ class Recipe
         $this->categories = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->sections = new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -176,6 +188,35 @@ class Recipe
     public function setTeaserImage(?string $teaserImage): static
     {
         $this->teaserImage = $teaserImage;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RecipeImage>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(RecipeImage $image): static
+    {
+        if (!$this->images->contains($image)) {
+            $this->images->add($image);
+            $image->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(RecipeImage $image): static
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getRecipe() === $this) {
+                $image->setRecipe(null);
+            }
+        }
 
         return $this;
     }

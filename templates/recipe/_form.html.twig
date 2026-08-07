@@ -1,3 +1,32 @@
+{#
+  One image field: the picture that is there now, the field to replace it and
+  the box to take it away. The teaser and the section pictures behave the same,
+  so they are drawn by the same macro.
+
+  `current` is the file name the entity holds — the remove box is pointless
+  without one, and never rendered then.
+#}
+{% macro image_field(field, remove_field, current, label) %}
+    <div class="mb-5">
+        <label class="mb-1 block text-sm font-medium text-gray-700" for="{{ field.vars.id }}">
+            {{ current ? label ~ ' ersetzen' : label }}
+        </label>
+        {% if current %}
+            <img src="{{ asset('uploads/images/' ~ current) }}" alt=""
+                 class="mb-2 h-24 w-32 rounded-xl object-cover ring-1 ring-black/5">
+        {% endif %}
+        {{ form_widget(field) }}
+        {{ form_errors(field) }}
+        {% if current %}
+            <label class="mt-2 flex w-fit items-center gap-2 text-sm text-gray-700">
+                {{ form_widget(remove_field) }} {{ label }} entfernen
+            </label>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% import _self as fields %}
+
 {{ form_start(form) }}
 <div class="space-y-6">
 
@@ -33,6 +62,8 @@
                     </div>
 
                     {{ form_row(section.title, {label: 'Titel des Abschnitts'}) }}
+
+                    {{ fields.image_field(section.image, section.removeImage, section.vars.data.image, 'Bild des Abschnitts') }}
 
                     <div class="ingredients-wrapper mt-4"
                          data-index="{{ section.ingredients|length }}">
@@ -73,7 +104,48 @@
         </button>
     </div>
 
-    {{ form_row(form.teaserImage) }}
+    {{ fields.image_field(form.teaserImage, form.removeTeaserImage, form.vars.data.teaserImage, 'Titelbild') }}
+
+    {# ── Gallery (manually rendered, same reasoning as the sections above) ── #}
+    <div id="gallery-wrapper" data-controller="recipe-gallery" data-index="{{ form.images|length }}">
+
+        <h2 class="mb-1 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Galerie</h2>
+        <p class="mb-3 text-sm text-gray-500">Weitere Bilder zum Rezept. Das Titelbild gehört nicht dazu.</p>
+
+        {{ form_errors(form.images) }}
+
+        <div id="gallery-list" class="space-y-3">
+            {% for image in form.images %}
+                <div class="gallery-item flex flex-wrap items-center gap-3 rounded-2xl bg-[#f5f5f7] p-4 ring-1 ring-black/5">
+                    {% if image.vars.data.filename %}
+                        <img src="{{ asset('uploads/images/' ~ image.vars.data.filename) }}"
+                             alt="{{ image.vars.data.caption }}"
+                             class="h-16 w-20 shrink-0 rounded-xl object-cover ring-1 ring-black/5">
+                    {% endif %}
+                    <div class="min-w-[12rem] flex-1 space-y-2">
+                        {{ form_widget(image.file) }}
+                        {{ form_widget(image.caption) }}
+                    </div>
+                    <button type="button"
+                            class="remove-image-btn shrink-0 rounded-full p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                            aria-label="Bild entfernen">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="w-full">
+                        {{ form_errors(image.file) }}
+                        {{ form_errors(image.caption) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="add-image-btn" class="btn btn-outline mt-4">
+            + Bild hinzufügen
+        </button>
+    </div>
+
     {{ form_row(form.categories) }}
 </div>
 
@@ -105,10 +177,12 @@
    Field names follow the stable Symfony convention:
      recipe[sections][SECTION_IDX][...]
      recipe[sections][SECTION_IDX][ingredients][INGREDIENT_IDX][...]
+     recipe[images][IMAGE_IDX][...]
 
    Placeholders replaced by JS:
      __section__    → section index
      __ingredient__ → ingredient index within that section
+     __image__      → gallery image index
    ────────────────────────────────────────────────────────────────────────── #}
 
 <template id="section-template">
@@ -129,6 +203,15 @@
                    placeholder="z.B. Kuchenboden, Teig, Sauce …"
                    class="form-input">
         </div>
+        <div class="mb-5">
+            <label class="mb-1 block text-sm font-medium text-gray-700"
+                   for="recipe_sections___section___image">Bild des Abschnitts</label>
+            <input type="file"
+                   id="recipe_sections___section___image"
+                   name="recipe[sections][__section__][image]"
+                   accept="image/jpeg,image/png,image/webp"
+                   class="form-input">
+        </div>
         <div class="ingredients-wrapper mt-4" data-index="0">
             <p class="mb-2 text-sm font-medium text-gray-700">Zutaten</p>
             <div class="ingredients-list space-y-2"></div>
@@ -145,6 +228,30 @@
                       placeholder="Zubereitungsschritte …"
                       class="form-input"></textarea>
         </div>
+    </div>
+</template>
+
+<template id="image-template">
+    <div class="gallery-item flex flex-wrap items-center gap-3 rounded-2xl bg-[#f5f5f7] p-4 ring-1 ring-black/5">
+        <div class="min-w-[12rem] flex-1 space-y-2">
+            <input type="file"
+                   id="recipe_images___image___file"
+                   name="recipe[images][__image__][file]"
+                   accept="image/jpeg,image/png,image/webp"
+                   class="form-input">
+            <input type="text"
+                   id="recipe_images___image___caption"
+                   name="recipe[images][__image__][caption]"
+                   placeholder="Bildunterschrift (optional)"
+                   class="form-input">
+        </div>
+        <button type="button"
+                class="remove-image-btn shrink-0 rounded-full p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                aria-label="Bild entfernen">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 </template>
 

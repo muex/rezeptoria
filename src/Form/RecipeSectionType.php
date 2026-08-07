@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\RecipeSection;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -34,6 +35,12 @@ class RecipeSectionType extends AbstractType
                 'label' => 'Zubereitung',
                 'required' => false,
                 'attr' => ['rows' => 5, 'placeholder' => 'Zubereitungsschritte …'],
+            ])
+            ->add('image', ImageUploadType::class, ['label' => 'Bild des Abschnitts'])
+            ->add('removeImage', CheckboxType::class, [
+                'label' => 'Bild des Abschnitts entfernen',
+                'required' => false,
+                'mapped' => false,
             ])
         ;
     }

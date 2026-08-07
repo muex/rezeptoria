@@ -50,6 +50,30 @@
                  class="mt-8 aspect-[16/9] w-full rounded-2xl object-cover ring-1 ring-black/5">
         {% endif %}
 
+        {# ── Gallery: a strip that scrolls sideways, a click opens the lightbox ── #}
+        {% if recipe.images|length > 0 %}
+            <div class="mt-4" data-controller="lightbox">
+                <ul class="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:px-0">
+                    {% for image in recipe.images %}
+                        <li class="w-44 shrink-0 snap-start sm:w-52">
+                            <button type="button" class="block w-full text-left"
+                                    data-action="lightbox#open" data-lightbox-index-param="{{ loop.index0 }}"
+                                    aria-label="Bild {{ loop.index }} von {{ recipe.images|length }} groß anzeigen">
+                                <img src="{{ asset('uploads/images/' ~ image.filename) }}"
+                                     alt="{{ image.caption ?: recipe.title }}"
+                                     data-caption="{{ image.caption }}"
+                                     loading="lazy"
+                                     class="gallery-image aspect-[4/3] w-full rounded-2xl object-cover ring-1 ring-black/5 transition-transform duration-300 hover:scale-[1.03]">
+                                {% if image.caption %}
+                                    <span class="mt-1.5 block truncate text-xs text-gray-500">{{ image.caption }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
         {# ── Sections (new structured data) ───────────────────── #}
         {% if recipe.sections|length > 0 %}
 
@@ -69,6 +93,12 @@
                     <h2 class="border-b border-black/5 pb-2 text-xl font-semibold tracking-tight text-[#1d1d1f]">
                         {{ section.title }}
                     </h2>
+
+                    {% if section.image %}
+                        <img src="{{ asset('uploads/images/' ~ section.image) }}" alt="{{ section.title }}"
+                             loading="lazy"
+                             class="mt-5 aspect-[16/9] w-full rounded-2xl object-cover ring-1 ring-black/5">
+                    {% endif %}
 
                     {% if section.ingredients|length > 0 %}
                         <h3 class="mt-5 text-sm font-semibold uppercase tracking-[0.12em] text-gray-500">Zutaten</h3>

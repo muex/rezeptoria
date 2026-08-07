@@ -9,13 +9,11 @@ use App\Form\CommentType;
 use App\Form\RecipeType;
 use App\Repository\RecipeRepository;
 use App\Security\Voter\RecipeVoter;
-use App\Service\RecipeImageStorage;
+use App\Service\RecipeImageUpdater;
 use App\Service\RecipeSlugGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -39,7 +37,7 @@ final class RecipeController extends AbstractController
 
     #[Route('/recipe/new', name: 'app_recipe_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage, RecipeSlugGenerator $slugGenerator): Response
+    public function new(#[CurrentUser] User $user, Request $request, EntityManagerInterface $entityManager, RecipeImageUpdater $imageUpdater, RecipeSlugGenerator $slugGenerator): Response
     {
         $recipe = new Recipe();
 
@@ -49,15 +47,10 @@ final class RecipeController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $teaserImageFile = $form->get('teaserImage')->getData();
-            if ($teaserImageFile instanceof UploadedFile) {
-                try {
-                    $recipe->setTeaserImage($imageStorage->store($teaserImageFile));
-                } catch (FileException) {
-                    // Save the recipe without an image rather than pointing at a
-                    // file that was never written.
-                    $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
-                }
+            // Save the recipe without the images that could not be written
+            // rather than pointing it at files that were never created.
+            foreach ($imageUpdater->apply($form, $recipe) as $failure) {
+                $this->addFlash('error', $failure);
             }
 
             $recipe->setSlug($slugGenerator->generate($recipe));
@@ -116,26 +109,25 @@ final class RecipeController extends AbstractController
 
     #[Route('/{slug}/edit', name: 'app_recipe_edit', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['GET', 'POST'])]
     #[IsGranted(RecipeVoter::EDIT, subject: 'recipe')]
-    public function edit(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage): Response
+    public function edit(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageUpdater $imageUpdater): Response
     {
+        // Taken before the form is applied: from then on the recipe already
+        // points at the new images, and the ones it dropped can only be
+        // recognised by comparing against this list.
+        $filesBefore = $imageUpdater->referencedFiles($recipe);
+
         $form = $this->createForm(RecipeType::class, $recipe);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $teaserImageFile = $form->get('teaserImage')->getData();
-            if ($teaserImageFile instanceof UploadedFile) {
-                $replacedImage = $recipe->getTeaserImage();
-
-                try {
-                    $recipe->setTeaserImage($imageStorage->store($teaserImageFile));
-                    // Only once the replacement is safely on disk.
-                    $imageStorage->remove($replacedImage);
-                } catch (FileException) {
-                    // Keep the previous image rather than pointing at a file that was never written.
-                    $this->addFlash('error', 'Das Bild konnte nicht gespeichert werden.');
-                }
+            foreach ($imageUpdater->apply($form, $recipe) as $failure) {
+                $this->addFlash('error', $failure);
             }
+
             $entityManager->flush();
+
+            // Only once the replacements are safely on disk and saved.
+            $imageUpdater->removeReplaced($filesBefore, $recipe);
 
             return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -148,17 +140,17 @@ final class RecipeController extends AbstractController
 
     #[Route('/{slug}', name: 'app_recipe_delete', requirements: ['slug' => RecipeSlugGenerator::SLUG_PATTERN], methods: ['POST'])]
     #[IsGranted(RecipeVoter::DELETE, subject: 'recipe')]
-    public function delete(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageStorage $imageStorage): Response
+    public function delete(Request $request, #[MapEntity(mapping: ['slug' => 'slug'])] Recipe $recipe, EntityManagerInterface $entityManager, RecipeImageUpdater $imageUpdater): Response
     {
         if ($this->isCsrfTokenValid('delete'.$recipe->getId(), $request->getPayload()->getString('_token'))) {
-            $teaserImage = $recipe->getTeaserImage();
+            $files = $imageUpdater->referencedFiles($recipe);
 
             $entityManager->remove($recipe);
             $entityManager->flush();
 
             // After the row is gone, so a failed delete cannot leave a recipe
             // pointing at a missing file.
-            $imageStorage->remove($teaserImage);
+            $imageUpdater->removeAll($files);
         }
 
         return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);

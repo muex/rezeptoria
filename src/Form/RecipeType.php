@@ -6,14 +6,13 @@ use App\Entity\Category;
 use App\Entity\Recipe;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
 
 class RecipeType extends AbstractType
 {
@@ -40,31 +39,21 @@ class RecipeType extends AbstractType
                 'by_reference' => false,
                 'label' => false,
             ])
-            ->add('teaserImage', FileType::class, [
-                'label' => 'Titelbild',
+            ->add('teaserImage', ImageUploadType::class, ['label' => 'Titelbild'])
+            // Only offered once there is an image to take away — see the
+            // image_field macro in recipe/_form.html.twig.
+            ->add('removeTeaserImage', CheckboxType::class, [
+                'label' => 'Titelbild entfernen',
                 'required' => false,
                 'mapped' => false,
-                'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
-                // Uploads land in public/uploads/images and are served from our
-                // own origin, so anything but a real raster image is a liability
-                // — an SVG carrying a <script> would run as first-party code.
-                'constraints' => [
-                    new File(
-                        // Matches PHP's upload_max_filesize; raise both together.
-                        maxSize: '2M',
-                        // Checks the extension *and* that the content matches it,
-                        // so an SVG renamed to .png is rejected as well.
-                        extensions: ['jpg', 'jpeg', 'png', 'webp'],
-                        notFoundMessage: 'Das Bild konnte nicht gelesen werden.',
-                        maxSizeMessage: 'Das Bild ist zu groß ({{ size }} {{ suffix }}). Erlaubt sind maximal {{ limit }} {{ suffix }}.',
-                        mimeTypesMessage: 'Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.',
-                        extensionsMessage: 'Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.',
-                        // No size placeholder here: PHP reports this limit in raw bytes.
-                        uploadIniSizeErrorMessage: 'Das Bild überschreitet das Upload-Limit des Servers.',
-                        uploadFormSizeErrorMessage: 'Das Bild ist zu groß.',
-                        uploadErrorMessage: 'Das Bild konnte nicht hochgeladen werden.',
-                    ),
-                ],
+            ])
+            ->add('images', CollectionType::class, [
+                'entry_type' => RecipeImageType::class,
+                'prototype_name' => '__image__',
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'label' => false,
             ])
             ->add('categories', EntityType::class, [
                 'class' => Category::class,

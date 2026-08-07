@@ -16,6 +16,31 @@ here — run `doctrine:migrations:migrate` against a real database to check thos
 Form CSRF protection is switched off in the test environment: the stateless
 token is completed by JavaScript in the browser, which BrowserKit does not run.
 
+## Recipe images
+
+A recipe carries images in three places, all stored as plain file names under
+`public/uploads/images`:
+
+| Where           | Held by                    | Shown as                                                   |
+|-----------------|----------------------------|------------------------------------------------------------|
+| Teaser          | `Recipe.teaserImage`       | Title image, listing thumbnail and `og:image` of the page. |
+| Gallery         | `RecipeImage` (0–12 rows)  | Slider under the title image; a click opens the lightbox.  |
+| Section picture | `RecipeSection.image`      | One picture inside the section it belongs to.              |
+
+All three go through `ImageUploadType`, so they are judged by the same rules —
+JPG, PNG or WebP, at most 2 MB, content checked rather than the extension.
+
+`RecipeImageUpdater` is what connects the form to the files: it writes the
+uploads to disk, hands the recipe the file names, and deletes what the recipe
+stopped pointing at. An upload that cannot be written leaves the previous image
+in place instead of replacing it with a broken reference, and a gallery row
+that was added but never given a file is dropped rather than saved.
+
+A gallery image is removed by removing its row. The teaser and the section
+pictures carry a "remove" box instead, shown only once there is an image to
+take away. Picking a new file wins over a ticked box: the file says more
+clearly what the image should be.
+
 ## Advertisement slots
 
 Ads are rendered through a single reusable partial:
