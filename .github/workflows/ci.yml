@@ -44,6 +44,12 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
+      # var/tailwind is not committed either, and base.html.twig refuses to
+      # render without the built stylesheet — which takes every functional
+      # test with it.
+      - name: Build the stylesheet
+        run: php bin/console tailwind:build
+
       - name: Lint templates
         run: php bin/console lint:twig templates
 
